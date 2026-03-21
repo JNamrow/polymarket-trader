@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pause, Square, Play, Clock, Zap, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import BotDetailModal from './BotDetailModal';
 
 const algorithmLabels = {
   momentum: 'Momentum',
@@ -13,7 +14,8 @@ const algorithmLabels = {
   custom: 'Custom',
 };
 
-export default function LiveBots({ bots, onPause, onStop, onResume }) {
+export default function LiveBots({ bots, trades = [], onPause, onStop, onResume }) {
+  const [selectedBot, setSelectedBot] = useState(null);
   if (bots.length === 0) {
     return (
       <div className="bg-card border border-border rounded-xl p-6">
@@ -40,6 +42,12 @@ export default function LiveBots({ bots, onPause, onStop, onResume }) {
           {bots.length} Active
         </Badge>
       </div>
+      <BotDetailModal
+        bot={selectedBot}
+        trades={trades}
+        open={!!selectedBot}
+        onClose={() => setSelectedBot(null)}
+      />
       <div className="space-y-2">
         {bots.map((bot) => {
           const pnl = bot.pnl || 0;
@@ -47,7 +55,7 @@ export default function LiveBots({ bots, onPause, onStop, onResume }) {
           const elapsed = bot.start_time ? formatDistanceToNow(new Date(bot.start_time), { addSuffix: false }) : '—';
 
           return (
-            <div key={bot.id} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors">
+            <div key={bot.id} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer" onClick={() => setSelectedBot(bot)}>
               {/* Status indicator */}
               <div className={cn(
                 "w-2 h-2 rounded-full flex-shrink-0",
@@ -95,7 +103,7 @@ export default function LiveBots({ bots, onPause, onStop, onResume }) {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-1 flex-shrink-0">
+              <div className="flex gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
                 {bot.status === 'running' ? (
                   <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-yellow-500" onClick={() => onPause(bot)}>
                     <Pause className="w-3.5 h-3.5" />
