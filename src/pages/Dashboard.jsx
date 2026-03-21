@@ -7,8 +7,10 @@ import LiveBots from '../components/dashboard/LiveBots';
 import CompletedRuns from '../components/dashboard/CompletedRuns';
 import NewBotModal from '../components/bot-setup/NewBotModal';
 import ExperimentModal from '../components/bot-setup/ExperimentModal';
-import { Activity, Plus, FlaskConical, Wallet } from 'lucide-react';
+import Watchlist from '../components/watchlist/Watchlist';
+import { Activity, Plus, FlaskConical, Wallet, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
@@ -28,6 +30,7 @@ export default function Dashboard() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['botRuns'] }),
   });
 
+  const [activeTab, setActiveTab] = useState('bots');
   const [showNewBot, setShowNewBot] = useState(false);
   const [showExperiment, setShowExperiment] = useState(false);
   const [walletBalance, setWalletBalance] = useState(null);
@@ -57,14 +60,34 @@ export default function Dashboard() {
     );
   }
 
+  const TABS = [
+    { id: 'bots', label: 'My Bots', icon: Activity },
+    { id: 'watchlist', label: 'Watchlist', icon: Eye },
+  ];
+
   return (
     <div className="space-y-4 lg:space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Activity className="w-5 h-5 text-primary" />
-          <h1 className="text-lg font-semibold text-foreground">Dashboard</h1>
-          {availableFunds !== null && (
+          <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
+            {TABS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+                  activeTab === id
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
+          {activeTab === 'bots' && availableFunds !== null && (
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-secondary border border-border">
               <Wallet className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">Available</span>
@@ -74,45 +97,51 @@ export default function Dashboard() {
             </div>
           )}
         </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setShowExperiment(true)}
-            variant="outline"
-            className="h-9 border-violet-500/30 bg-violet-500/5 text-violet-400 hover:bg-violet-500/10 hover:text-violet-300 font-medium text-sm rounded-lg"
-          >
-            <FlaskConical className="w-4 h-4 mr-1.5" />
-            Experiment
-          </Button>
-          <Button
-            onClick={() => setShowNewBot(true)}
-            className="h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm rounded-lg"
-          >
-            <Plus className="w-4 h-4 mr-1.5" />
-            New Bot
-          </Button>
-        </div>
+        {activeTab === 'bots' && (
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setShowExperiment(true)}
+              variant="outline"
+              className="h-9 border-violet-500/30 bg-violet-500/5 text-violet-400 hover:bg-violet-500/10 hover:text-violet-300 font-medium text-sm rounded-lg"
+            >
+              <FlaskConical className="w-4 h-4 mr-1.5" />
+              Experiment
+            </Button>
+            <Button
+              onClick={() => setShowNewBot(true)}
+              className="h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm rounded-lg"
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              New Bot
+            </Button>
+          </div>
+        )}
       </div>
 
       <NewBotModal open={showNewBot} onClose={() => setShowNewBot(false)} />
       <ExperimentModal open={showExperiment} onClose={() => setShowExperiment(false)} />
 
-      <StatsRow botRuns={botRuns} />
+      {activeTab === 'bots' && (
+        <>
+          <StatsRow botRuns={botRuns} />
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-5">
+            <div className="lg:col-span-3">
+              <PnlChart botRuns={botRuns} />
+            </div>
+            <div className="lg:col-span-2">
+              <LiveBots
+                bots={liveBots}
+                onPause={handlePause}
+                onResume={handleResume}
+                onStop={handleStop}
+              />
+            </div>
+          </div>
+          <CompletedRuns runs={completedRuns} trades={trades} />
+        </>
+      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-5">
-        <div className="lg:col-span-3">
-          <PnlChart botRuns={botRuns} />
-        </div>
-        <div className="lg:col-span-2">
-          <LiveBots
-            bots={liveBots}
-            onPause={handlePause}
-            onResume={handleResume}
-            onStop={handleStop}
-          />
-        </div>
-      </div>
-
-      <CompletedRuns runs={completedRuns} trades={trades} />
+      {activeTab === 'watchlist' && <Watchlist />}
     </div>
   );
 }
