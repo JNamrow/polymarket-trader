@@ -165,37 +165,76 @@ export default function BotDetailModal({ bot, trades, open, onClose }) {
                 No trades recorded for this run yet.
               </div>
             ) : (
-              <div className="divide-y divide-border rounded-xl overflow-hidden border border-border">
+              <div className="rounded-xl overflow-hidden border border-border">
                 {/* Header */}
-                <div className="grid grid-cols-[auto_auto_1fr_auto_auto_auto_auto] gap-3 px-4 py-2 bg-muted/30 text-xs text-muted-foreground">
-                  <span>Token</span>
-                  <span>Type</span>
+                <div className="grid grid-cols-[56px_1fr_40px_64px_64px_64px_72px_52px_48px] gap-x-3 px-4 py-2 bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                  <span>Side</span>
                   <span>Market</span>
-                  <span className="text-right">Entry</span>
-                  <span className="text-right">Exit</span>
                   <span className="text-right">Qty</span>
+                  <span className="text-right">Entry</span>
+                  <span className="text-right">Current</span>
+                  <span className="text-right">Exit</span>
                   <span className="text-right">P&L</span>
+                  <span className="text-right">%</span>
+                  <span className="text-right">Time</span>
                 </div>
-                {botTrades.map(trade => {
-                  const tradePnl = trade.pnl || 0;
-                  const tradePositive = tradePnl >= 0;
-                  const isYes = trade.outcome === 'YES' || trade.side === 'buy';
-                  return (
-                    <div key={trade.id} className="grid grid-cols-[auto_auto_1fr_auto_auto_auto_auto] gap-3 items-center px-4 py-2.5 text-xs hover:bg-secondary/30 transition-colors">
-                      <span className={cn("font-mono font-semibold", isYes ? "text-primary" : "text-destructive")}>
-                        {trade.outcome || (trade.side === 'buy' ? 'YES' : 'NO')}
-                      </span>
-                      <span className="text-muted-foreground font-mono">{trade.order_type || 'GTC'}</span>
-                      <span className="text-muted-foreground truncate">{trade.market_name}</span>
-                      <span className="font-mono text-muted-foreground text-right">${trade.entry_price?.toFixed(3)}</span>
-                      <span className="font-mono text-muted-foreground text-right">{trade.exit_price ? `$${trade.exit_price.toFixed(3)}` : '—'}</span>
-                      <span className="font-mono text-muted-foreground text-right">{trade.quantity}</span>
-                      <span className={cn('font-mono font-semibold text-right', tradePositive ? 'text-primary' : 'text-destructive')}>
-                        {tradePositive ? '+' : ''}${tradePnl.toFixed(2)}
-                      </span>
-                    </div>
-                  );
-                })}
+                <div className="divide-y divide-border">
+                  {botTrades.map(trade => {
+                    const tradePnl = trade.pnl || 0;
+                    const tradePositive = tradePnl >= 0;
+                    const isBuy = trade.side === 'buy';
+                    const isOpen = trade.status === 'open' || !trade.exit_price;
+                    const pnlPct = trade.entry_price && trade.quantity
+                      ? (tradePnl / (trade.entry_price * trade.quantity)) * 100
+                      : null;
+                    const tradeTime = trade.timestamp ? format(new Date(trade.timestamp), 'HH:mm') : '—';
+
+                    return (
+                      <div key={trade.id} className="grid grid-cols-[56px_1fr_40px_64px_64px_64px_72px_52px_48px] gap-x-3 items-center px-4 py-3 text-xs hover:bg-secondary/30 transition-colors">
+                        {/* Side */}
+                        <span className={cn("font-bold font-mono text-xs", isBuy ? "text-primary" : "text-destructive")}>
+                          {isBuy ? 'BUY' : 'SELL'}
+                        </span>
+
+                        {/* Market */}
+                        <span className="text-foreground/80 truncate" title={trade.market_name}>
+                          {trade.market_name}
+                        </span>
+
+                        {/* Qty */}
+                        <span className="font-mono text-foreground/70 text-right">{trade.quantity ?? '—'}</span>
+
+                        {/* Entry */}
+                        <span className="font-mono text-foreground/70 text-right">
+                          {trade.entry_price != null ? `$${trade.entry_price.toFixed(3)}` : '—'}
+                        </span>
+
+                        {/* Current (use exit if closed, entry if open) */}
+                        <span className="font-mono text-foreground/70 text-right">
+                          {trade.exit_price != null ? `$${trade.exit_price.toFixed(3)}` : trade.entry_price != null ? `$${trade.entry_price.toFixed(3)}` : '—'}
+                        </span>
+
+                        {/* Exit */}
+                        <span className="font-mono text-muted-foreground text-right">
+                          {isOpen ? <span className="text-muted-foreground/60">open</span> : `$${trade.exit_price.toFixed(3)}`}
+                        </span>
+
+                        {/* P&L */}
+                        <span className={cn('font-mono font-bold text-right', tradePositive ? 'text-primary' : 'text-destructive')}>
+                          {tradePositive ? '+' : ''}${tradePnl.toFixed(2)}
+                        </span>
+
+                        {/* % */}
+                        <span className={cn('font-mono text-right', tradePositive ? 'text-primary/80' : 'text-destructive/80')}>
+                          {pnlPct != null && !isOpen ? `${pnlPct > 0 ? '+' : ''}${pnlPct.toFixed(1)}%` : <span className="text-muted-foreground/40">—</span>}
+                        </span>
+
+                        {/* Time */}
+                        <span className="font-mono text-muted-foreground/60 text-right text-[10px]">{tradeTime}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
