@@ -21,6 +21,9 @@ export default function NewBotModal({ open, onClose }) {
   const [useCustomDuration, setUseCustomDuration] = useState(false);
   const [customParams, setCustomParams] = useState({ entry: 0.3, exit: 0.7, maxPositions: 5 });
   const [botName, setBotName] = useState('');
+  const [kellyFraction, setKellyFraction] = useState(0.25);
+  const [orderType, setOrderType] = useState('GTC');
+  const [negRisk, setNegRisk] = useState(false);
 
   const simulatedBalance = 2847.52;
 
