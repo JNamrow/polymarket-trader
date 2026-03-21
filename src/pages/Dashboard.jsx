@@ -68,8 +68,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-4 lg:space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
             {TABS.map(({ id, label, icon: Icon }) => (
               <button
@@ -83,14 +83,14 @@ export default function Dashboard() {
                 )}
               >
                 <Icon className="w-3.5 h-3.5" />
-                {label}
+                <span className="hidden sm:inline">{label}</span>
               </button>
             ))}
           </div>
           {activeTab === 'bots' && availableFunds !== null && (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-secondary border border-border">
-              <Wallet className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Available</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary border border-border">
+              <Wallet className="w-3 h-3 text-muted-foreground" />
+              <span className="hidden sm:inline text-xs text-muted-foreground">Available</span>
               <span className={`text-xs font-mono font-semibold ${availableFunds > 0 ? 'text-primary' : 'text-destructive'}`}>
                 ${availableFunds.toFixed(2)}
               </span>
@@ -98,21 +98,23 @@ export default function Dashboard() {
           )}
         </div>
         {activeTab === 'bots' && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <Button
               onClick={() => setShowExperiment(true)}
               variant="outline"
-              className="h-9 border-violet-500/30 bg-violet-500/5 text-violet-400 hover:bg-violet-500/10 hover:text-violet-300 font-medium text-sm rounded-lg"
+              size="sm"
+              className="h-8 border-violet-500/30 bg-violet-500/5 text-violet-400 hover:bg-violet-500/10 hover:text-violet-300 font-medium rounded-lg px-2.5"
             >
-              <FlaskConical className="w-4 h-4 mr-1.5" />
-              Experiment
+              <FlaskConical className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline ml-1.5">Experiment</span>
             </Button>
             <Button
               onClick={() => setShowNewBot(true)}
-              className="h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm rounded-lg"
+              size="sm"
+              className="h-8 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg px-2.5"
             >
-              <Plus className="w-4 h-4 mr-1.5" />
-              New Bot
+              <Plus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline ml-1.5">New Bot</span>
             </Button>
           </div>
         )}
