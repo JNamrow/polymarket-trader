@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, History } from 'lucide-react';
+import { History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import BotDetailModal from './BotDetailModal';
 
 const algorithmLabels = {
   momentum: 'Momentum',
@@ -12,87 +13,45 @@ const algorithmLabels = {
   custom: 'Custom',
 };
 
-function TradeRow({ trade }) {
-  const pnl = trade.pnl || 0;
-  const isPositive = pnl >= 0;
-
-  return (
-    <div className="flex items-center gap-4 px-4 py-2 text-xs bg-muted/50 border-l-2 border-border ml-4">
-      <span className="text-muted-foreground w-40 truncate">{trade.market_name}</span>
-      <Badge variant="outline" className={cn(
-        "text-xs",
-        trade.side === 'buy' ? "text-primary border-primary/30" : "text-destructive border-destructive/30"
-      )}>
-        {trade.side?.toUpperCase()}
-      </Badge>
-      <span className="font-mono text-muted-foreground">Entry: ${trade.entry_price?.toFixed(3)}</span>
-      <span className="font-mono text-muted-foreground">Exit: ${trade.exit_price?.toFixed(3) || '—'}</span>
-      <span className="font-mono text-muted-foreground">Qty: {trade.quantity}</span>
-      <span className={cn("font-mono font-medium ml-auto", isPositive ? "text-primary" : "text-destructive")}>
-        {isPositive ? '+' : ''}${pnl.toFixed(2)}
-      </span>
-    </div>
-  );
-}
-
-function RunRow({ run, trades }) {
-  const [expanded, setExpanded] = useState(false);
+function RunRow({ run, onClick }) {
   const pnl = run.pnl || 0;
   const isPositive = pnl >= 0;
-  const runTrades = trades.filter(t => t.bot_run_id === run.id);
   const duration = run.start_time && run.end_time
     ? `${Math.round((new Date(run.end_time) - new Date(run.start_time)) / 3600000)}h`
     : '—';
 
   return (
-    <div>
-      <div
-        className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/50 transition-colors cursor-pointer"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <button className="text-muted-foreground flex-shrink-0">
-          {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-        </button>
-        <span className="text-xs font-mono text-muted-foreground w-16 flex-shrink-0">#{run.id?.slice(-6)}</span>
-        <Badge variant="outline" className="text-xs border-border text-muted-foreground flex-shrink-0">
-          {algorithmLabels[run.algorithm] || run.algorithm}
-        </Badge>
-        <span className="text-xs text-muted-foreground flex-shrink-0">{run.categories?.join(', ') || '—'}</span>
-        <span className="text-xs text-muted-foreground font-mono flex-shrink-0">
-          {run.start_time ? format(new Date(run.start_time), 'MMM d, HH:mm') : '—'}
-        </span>
-        <span className="text-xs text-muted-foreground font-mono flex-shrink-0">{duration}</span>
-        <span className="text-xs text-muted-foreground font-mono flex-shrink-0">
-          B:{run.positions_bought || 0} / S:{run.positions_sold || 0}
-        </span>
-        <span className={cn(
-          "text-sm font-mono font-semibold ml-auto",
-          isPositive ? "text-primary" : "text-destructive"
-        )}>
-          {isPositive ? '+' : ''}${pnl.toFixed(2)}
-        </span>
-        <Badge variant="outline" className={cn(
-          "text-xs flex-shrink-0",
-          run.status === 'completed' ? "text-primary border-primary/30" : "text-destructive border-destructive/30"
-        )}>
-          {run.status}
-        </Badge>
-      </div>
-      {expanded && runTrades.length > 0 && (
-        <div className="space-y-px pb-2">
-          {runTrades.map((trade) => (
-            <TradeRow key={trade.id} trade={trade} />
-          ))}
-        </div>
-      )}
-      {expanded && runTrades.length === 0 && (
-        <div className="px-8 py-3 text-xs text-muted-foreground">No trade records for this run.</div>
-      )}
+    <div
+      className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/50 transition-colors cursor-pointer"
+      onClick={onClick}
+    >
+      <span className="text-xs font-mono text-muted-foreground w-16 flex-shrink-0">#{run.id?.slice(-6)}</span>
+      <Badge variant="outline" className="text-xs border-border text-muted-foreground flex-shrink-0">
+        {algorithmLabels[run.algorithm] || run.algorithm}
+      </Badge>
+      <span className="text-xs text-muted-foreground flex-shrink-0 hidden sm:block">{run.categories?.join(', ') || '—'}</span>
+      <span className="text-xs text-muted-foreground font-mono flex-shrink-0 hidden md:block">
+        {run.start_time ? format(new Date(run.start_time), 'MMM d, HH:mm') : '—'}
+      </span>
+      <span className="text-xs text-muted-foreground font-mono flex-shrink-0">{duration}</span>
+      <span className="text-xs text-muted-foreground font-mono flex-shrink-0 hidden sm:block">
+        B:{run.positions_bought || 0} / S:{run.positions_sold || 0}
+      </span>
+      <span className={cn('text-sm font-mono font-semibold ml-auto', isPositive ? 'text-primary' : 'text-destructive')}>
+        {isPositive ? '+' : ''}${pnl.toFixed(2)}
+      </span>
+      <Badge variant="outline" className={cn(
+        'text-xs flex-shrink-0',
+        run.status === 'completed' ? 'text-primary border-primary/30' : 'text-destructive border-destructive/30'
+      )}>
+        {run.status}
+      </Badge>
     </div>
   );
 }
 
 export default function CompletedRuns({ runs, trades }) {
+  const [selectedRun, setSelectedRun] = useState(null);
   const totalPnl = runs.reduce((sum, r) => sum + (r.pnl || 0), 0);
   const isPositive = totalPnl >= 0;
 
@@ -111,32 +70,39 @@ export default function CompletedRuns({ runs, trades }) {
   }
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
-      <div className="flex items-center justify-between p-4 lg:p-5 border-b border-border">
-        <h3 className="text-sm font-medium text-foreground">Completed Runs</h3>
-        <span className={cn("text-sm font-mono font-semibold", isPositive ? "text-primary" : "text-destructive")}>
-          Total: {isPositive ? '+' : ''}${totalPnl.toFixed(2)}
-        </span>
+    <>
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between p-4 lg:p-5 border-b border-border">
+          <h3 className="text-sm font-medium text-foreground">Completed Runs</h3>
+          <span className={cn('text-sm font-mono font-semibold', isPositive ? 'text-primary' : 'text-destructive')}>
+            Total: {isPositive ? '+' : ''}${totalPnl.toFixed(2)}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3 px-4 py-2 border-b border-border bg-muted/30 text-xs text-muted-foreground">
+          <span className="w-16 flex-shrink-0">Run ID</span>
+          <span className="flex-shrink-0">Algorithm</span>
+          <span className="flex-shrink-0 hidden sm:block">Category</span>
+          <span className="flex-shrink-0 hidden md:block">Start</span>
+          <span className="flex-shrink-0">Duration</span>
+          <span className="flex-shrink-0 hidden sm:block">Positions</span>
+          <span className="ml-auto">P&L</span>
+          <span className="flex-shrink-0">Status</span>
+        </div>
+
+        <div className="divide-y divide-border">
+          {runs.map(run => (
+            <RunRow key={run.id} run={run} onClick={() => setSelectedRun(run)} />
+          ))}
+        </div>
       </div>
 
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-2 border-b border-border bg-muted/30 text-xs text-muted-foreground">
-        <span className="w-4 flex-shrink-0" />
-        <span className="w-16 flex-shrink-0">Run ID</span>
-        <span className="flex-shrink-0">Algorithm</span>
-        <span className="flex-shrink-0">Category</span>
-        <span className="flex-shrink-0">Start</span>
-        <span className="flex-shrink-0">Duration</span>
-        <span className="flex-shrink-0">Positions</span>
-        <span className="ml-auto">P&L</span>
-        <span className="flex-shrink-0">Status</span>
-      </div>
-
-      <div className="divide-y divide-border">
-        {runs.map(run => (
-          <RunRow key={run.id} run={run} trades={trades} />
-        ))}
-      </div>
-    </div>
+      <BotDetailModal
+        bot={selectedRun}
+        trades={trades}
+        open={!!selectedRun}
+        onClose={() => setSelectedRun(null)}
+      />
+    </>
   );
 }
