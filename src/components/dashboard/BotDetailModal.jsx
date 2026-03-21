@@ -86,13 +86,43 @@ export default function BotDetailModal({ bot, trades, open, onClose }) {
               </p>
             </div>
             <div className="bg-secondary/50 border border-border rounded-lg p-3 text-center">
-              <p className="text-xs text-muted-foreground">Positions Bought</p>
-              <p className="text-sm font-mono font-semibold text-foreground mt-0.5">{bot.positions_bought || 0}</p>
+              <p className="text-xs text-muted-foreground">Opened / Closed</p>
+              <p className="text-sm font-mono font-semibold text-foreground mt-0.5">{bot.positions_bought || 0} / {bot.positions_sold || 0}</p>
             </div>
             <div className="bg-secondary/50 border border-border rounded-lg p-3 text-center">
-              <p className="text-xs text-muted-foreground">Positions Sold</p>
-              <p className="text-sm font-mono font-semibold text-foreground mt-0.5">{bot.positions_sold || 0}</p>
+              <p className="text-xs text-muted-foreground">Avg Edge</p>
+              <p className={cn("text-sm font-mono font-semibold mt-0.5", (bot.avg_edge || 0) >= 0 ? "text-primary" : "text-destructive")}>
+                {bot.avg_edge != null ? `${bot.avg_edge > 0 ? '+' : ''}${bot.avg_edge.toFixed(1)}%` : '—'}
+              </p>
             </div>
+          </div>
+
+          {/* Config strip */}
+          <div className="flex flex-wrap gap-2">
+            {bot.kelly_fraction != null && (
+              <span className="text-xs font-mono px-2 py-1 rounded-md bg-secondary border border-border text-muted-foreground">
+                Kelly {bot.kelly_fraction === 0.25 ? '¼' : bot.kelly_fraction === 0.5 ? '½' : bot.kelly_fraction === 0.75 ? '¾' : '1×'}
+              </span>
+            )}
+            {bot.order_type && (
+              <span className="text-xs font-mono px-2 py-1 rounded-md bg-secondary border border-border text-muted-foreground">
+                {bot.order_type}
+              </span>
+            )}
+            {bot.neg_risk && (
+              <span className="text-xs font-mono px-2 py-1 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                NegRisk
+              </span>
+            )}
+            {bot.vpin != null && (
+              <span className={cn("text-xs font-mono px-2 py-1 rounded-md border",
+                bot.vpin > 0.85 ? "bg-destructive/10 border-destructive/30 text-destructive" :
+                bot.vpin > 0.7 ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400" :
+                "bg-secondary border-border text-muted-foreground"
+              )}>
+                VPIN {bot.vpin.toFixed(2)}
+              </span>
+            )}
           </div>
 
           {/* P&L Chart */}
@@ -137,8 +167,9 @@ export default function BotDetailModal({ bot, trades, open, onClose }) {
             ) : (
               <div className="divide-y divide-border rounded-xl overflow-hidden border border-border">
                 {/* Header */}
-                <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-3 px-4 py-2 bg-muted/30 text-xs text-muted-foreground">
-                  <span>Side</span>
+                <div className="grid grid-cols-[auto_auto_1fr_auto_auto_auto_auto] gap-3 px-4 py-2 bg-muted/30 text-xs text-muted-foreground">
+                  <span>Token</span>
+                  <span>Type</span>
                   <span>Market</span>
                   <span className="text-right">Entry</span>
                   <span className="text-right">Exit</span>
@@ -148,14 +179,13 @@ export default function BotDetailModal({ bot, trades, open, onClose }) {
                 {botTrades.map(trade => {
                   const tradePnl = trade.pnl || 0;
                   const tradePositive = tradePnl >= 0;
+                  const isYes = trade.outcome === 'YES' || trade.side === 'buy';
                   return (
-                    <div key={trade.id} className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-3 items-center px-4 py-2.5 text-xs hover:bg-secondary/30 transition-colors">
-                      <span>
-                        {trade.side === 'buy'
-                          ? <span className="flex items-center gap-1 text-primary"><ArrowUpCircle className="w-3.5 h-3.5" />Buy</span>
-                          : <span className="flex items-center gap-1 text-destructive"><ArrowDownCircle className="w-3.5 h-3.5" />Sell</span>
-                        }
+                    <div key={trade.id} className="grid grid-cols-[auto_auto_1fr_auto_auto_auto_auto] gap-3 items-center px-4 py-2.5 text-xs hover:bg-secondary/30 transition-colors">
+                      <span className={cn("font-mono font-semibold", isYes ? "text-primary" : "text-destructive")}>
+                        {trade.outcome || (trade.side === 'buy' ? 'YES' : 'NO')}
                       </span>
+                      <span className="text-muted-foreground font-mono">{trade.order_type || 'GTC'}</span>
                       <span className="text-muted-foreground truncate">{trade.market_name}</span>
                       <span className="font-mono text-muted-foreground text-right">${trade.entry_price?.toFixed(3)}</span>
                       <span className="font-mono text-muted-foreground text-right">{trade.exit_price ? `$${trade.exit_price.toFixed(3)}` : '—'}</span>
