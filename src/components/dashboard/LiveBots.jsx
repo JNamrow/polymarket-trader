@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pause, Square, Play, Clock, Zap } from 'lucide-react';
+import { Pause, Square, Play, Clock, Zap, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -56,11 +56,16 @@ export default function LiveBots({ bots, onPause, onStop, onResume }) {
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-foreground truncate">{bot.name}</span>
                   <Badge variant="outline" className="text-xs border-border text-muted-foreground">
                     {algorithmLabels[bot.algorithm] || bot.algorithm}
                   </Badge>
+                  {bot.is_paper && (
+                    <Badge variant="outline" className="text-xs border-violet-500/30 bg-violet-500/10 text-violet-400 flex items-center gap-1">
+                      <FlaskConical className="w-2.5 h-2.5" />Paper
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 mt-1">
                   <span className="text-xs text-muted-foreground font-mono">${bot.fund_allocation?.toFixed(0)} USDC</span>
