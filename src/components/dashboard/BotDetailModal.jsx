@@ -172,7 +172,7 @@ export default function BotDetailModal({ bot, trades, open, onClose }) {
                   <span className="flex-1 min-w-0">Market</span>
                   <span className="w-8 text-right flex-shrink-0">Qty</span>
                   <span className="w-14 text-right flex-shrink-0">Entry</span>
-                  <span className="w-14 text-right flex-shrink-0">Exit</span>
+                  <span className="w-20 text-right flex-shrink-0">Exit / Current</span>
                   <span className="w-16 text-right flex-shrink-0">P&L</span>
                   <span className="w-12 text-right flex-shrink-0">%</span>
                   <span className="w-10 text-right flex-shrink-0">Time</span>
@@ -200,8 +200,20 @@ export default function BotDetailModal({ bot, trades, open, onClose }) {
                         <span className="w-14 flex-shrink-0 font-mono text-foreground/70 text-right">
                           {trade.entry_price != null ? `$${trade.entry_price.toFixed(3)}` : '—'}
                         </span>
-                        <span className="w-14 flex-shrink-0 font-mono text-muted-foreground text-right">
-                          {isOpen ? <span className="text-muted-foreground/50">open</span> : `$${trade.exit_price.toFixed(3)}`}
+                        <span className="w-20 flex-shrink-0 font-mono text-right flex items-center justify-end gap-1.5">
+                          {isOpen ? (
+                            <>
+                              <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span>
+                              </span>
+                              <span className="text-primary/80">
+                                {trade.entry_price != null ? `$${trade.entry_price.toFixed(3)}` : 'live'}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-muted-foreground">${trade.exit_price.toFixed(3)}</span>
+                          )}
                         </span>
                         <span className={cn('w-16 flex-shrink-0 font-mono font-bold text-right', tradePositive ? 'text-primary' : 'text-destructive')}>
                           {tradePositive ? '+' : ''}${tradePnl.toFixed(2)}
