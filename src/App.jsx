@@ -9,7 +9,6 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
 import AppLayout from './components/layout/AppLayout';
 import Dashboard from './pages/Dashboard';
-import NewBot from './pages/NewBot';
 import Settings from './pages/Settings';
 
 const AuthenticatedApp = () => {
@@ -36,7 +35,6 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route element={<AppLayout />}>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/new-bot" element={<NewBot />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
