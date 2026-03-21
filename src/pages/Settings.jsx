@@ -15,12 +15,15 @@ export default function Settings() {
   const [notifyOnComplete, setNotifyOnComplete] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const [walletBalance, setWalletBalance] = useState(1000);
+
   useEffect(() => {
     base44.auth.me().then(user => {
       if (user?.polymarket_api_key) setApiKey(user.polymarket_api_key);
       if (user?.default_fund) setDefaultFund(user.default_fund);
       if (user?.default_algorithm) setDefaultAlgorithm(user.default_algorithm);
       if (user?.notify_on_complete !== undefined) setNotifyOnComplete(user.notify_on_complete);
+      if (user?.wallet_balance !== undefined) setWalletBalance(user.wallet_balance);
     }).catch(() => {});
   }, []);
 
@@ -31,6 +34,7 @@ export default function Settings() {
       default_fund: defaultFund,
       default_algorithm: defaultAlgorithm,
       notify_on_complete: notifyOnComplete,
+      wallet_balance: walletBalance,
     });
     setSaving(false);
     toast.success('Settings saved');
@@ -72,6 +76,18 @@ export default function Settings() {
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-muted-foreground" />
           <h2 className="text-sm font-medium text-foreground">Defaults</h2>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs text-muted-foreground">Total Wallet Balance (USDC)</label>
+          <Input
+            type="number"
+            min={0}
+            value={walletBalance}
+            onChange={(e) => setWalletBalance(Number(e.target.value))}
+            className="bg-transparent border-border font-mono text-sm"
+          />
+          <p className="text-xs text-muted-foreground">Your total USDC balance — used to calculate available funds on the dashboard.</p>
         </div>
 
         <div className="space-y-2">
