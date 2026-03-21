@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import StatsRow from '../components/dashboard/StatsRow';
 import PnlChart from '../components/dashboard/PnlChart';
 import LiveBots from '../components/dashboard/LiveBots';
 import CompletedRuns from '../components/dashboard/CompletedRuns';
-import { Activity } from 'lucide-react';
+import NewBotModal from '../components/bot-setup/NewBotModal';
+import { Activity, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
@@ -25,6 +27,7 @@ export default function Dashboard() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['botRuns'] }),
   });
 
+  const [showNewBot, setShowNewBot] = useState(false);
   const liveBots = botRuns.filter(r => r.status === 'running' || r.status === 'paused');
   const completedRuns = botRuns.filter(r => r.status === 'completed' || r.status === 'stopped');
 
@@ -46,10 +49,21 @@ export default function Dashboard() {
   return (
     <div className="space-y-4 lg:space-y-5">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Activity className="w-5 h-5 text-primary" />
-        <h1 className="text-lg font-semibold text-foreground">Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Activity className="w-5 h-5 text-primary" />
+          <h1 className="text-lg font-semibold text-foreground">Dashboard</h1>
+        </div>
+        <Button
+          onClick={() => setShowNewBot(true)}
+          className="h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm rounded-lg"
+        >
+          <Plus className="w-4 h-4 mr-1.5" />
+          New Bot
+        </Button>
       </div>
+
+      <NewBotModal open={showNewBot} onClose={() => setShowNewBot(false)} />
 
       <StatsRow botRuns={botRuns} />
 
