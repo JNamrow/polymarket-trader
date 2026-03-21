@@ -6,7 +6,8 @@ import PnlChart from '../components/dashboard/PnlChart';
 import LiveBots from '../components/dashboard/LiveBots';
 import CompletedRuns from '../components/dashboard/CompletedRuns';
 import NewBotModal from '../components/bot-setup/NewBotModal';
-import { Activity, Plus } from 'lucide-react';
+import ExperimentModal from '../components/bot-setup/ExperimentModal';
+import { Activity, Plus, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
@@ -28,6 +29,7 @@ export default function Dashboard() {
   });
 
   const [showNewBot, setShowNewBot] = useState(false);
+  const [showExperiment, setShowExperiment] = useState(false);
   const liveBots = botRuns.filter(r => r.status === 'running' || r.status === 'paused');
   const completedRuns = botRuns.filter(r => r.status === 'completed' || r.status === 'stopped');
 
@@ -54,16 +56,27 @@ export default function Dashboard() {
           <Activity className="w-5 h-5 text-primary" />
           <h1 className="text-lg font-semibold text-foreground">Dashboard</h1>
         </div>
-        <Button
-          onClick={() => setShowNewBot(true)}
-          className="h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm rounded-lg"
-        >
-          <Plus className="w-4 h-4 mr-1.5" />
-          New Bot
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setShowExperiment(true)}
+            variant="outline"
+            className="h-9 border-violet-500/30 bg-violet-500/5 text-violet-400 hover:bg-violet-500/10 hover:text-violet-300 font-medium text-sm rounded-lg"
+          >
+            <FlaskConical className="w-4 h-4 mr-1.5" />
+            Experiment
+          </Button>
+          <Button
+            onClick={() => setShowNewBot(true)}
+            className="h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm rounded-lg"
+          >
+            <Plus className="w-4 h-4 mr-1.5" />
+            New Bot
+          </Button>
+        </div>
       </div>
 
       <NewBotModal open={showNewBot} onClose={() => setShowNewBot(false)} />
+      <ExperimentModal open={showExperiment} onClose={() => setShowExperiment(false)} />
 
       <StatsRow botRuns={botRuns} />
 
