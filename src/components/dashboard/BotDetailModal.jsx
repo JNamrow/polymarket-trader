@@ -167,16 +167,15 @@ export default function BotDetailModal({ bot, trades, open, onClose }) {
             ) : (
               <div className="rounded-xl overflow-hidden border border-border">
                 {/* Header */}
-                <div className="grid grid-cols-[56px_1fr_40px_64px_64px_64px_72px_52px_48px] gap-x-3 px-4 py-2 bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
-                  <span>Side</span>
-                  <span>Market</span>
-                  <span className="text-right">Qty</span>
-                  <span className="text-right">Entry</span>
-                  <span className="text-right">Current</span>
-                  <span className="text-right">Exit</span>
-                  <span className="text-right">P&L</span>
-                  <span className="text-right">%</span>
-                  <span className="text-right">Time</span>
+                <div className="flex items-center gap-2 px-4 py-2 bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                  <span className="w-10 flex-shrink-0">Side</span>
+                  <span className="flex-1 min-w-0">Market</span>
+                  <span className="w-8 text-right flex-shrink-0">Qty</span>
+                  <span className="w-14 text-right flex-shrink-0">Entry</span>
+                  <span className="w-14 text-right flex-shrink-0">Exit</span>
+                  <span className="w-16 text-right flex-shrink-0">P&L</span>
+                  <span className="w-12 text-right flex-shrink-0">%</span>
+                  <span className="w-10 text-right flex-shrink-0">Time</span>
                 </div>
                 <div className="divide-y divide-border">
                   {botTrades.map(trade => {
@@ -190,47 +189,27 @@ export default function BotDetailModal({ bot, trades, open, onClose }) {
                     const tradeTime = trade.timestamp ? format(new Date(trade.timestamp), 'HH:mm') : '—';
 
                     return (
-                      <div key={trade.id} className="grid grid-cols-[56px_1fr_40px_64px_64px_64px_72px_52px_48px] gap-x-3 items-center px-4 py-3 text-xs hover:bg-secondary/30 transition-colors">
-                        {/* Side */}
-                        <span className={cn("font-bold font-mono text-xs", isBuy ? "text-primary" : "text-destructive")}>
+                      <div key={trade.id} className="flex items-center gap-2 px-4 py-3 text-xs hover:bg-secondary/30 transition-colors">
+                        <span className={cn("w-10 flex-shrink-0 font-bold font-mono", isBuy ? "text-primary" : "text-destructive")}>
                           {isBuy ? 'BUY' : 'SELL'}
                         </span>
-
-                        {/* Market */}
-                        <span className="text-foreground/80 truncate" title={trade.market_name}>
+                        <span className="flex-1 min-w-0 text-foreground/80 truncate" title={trade.market_name}>
                           {trade.market_name}
                         </span>
-
-                        {/* Qty */}
-                        <span className="font-mono text-foreground/70 text-right">{trade.quantity ?? '—'}</span>
-
-                        {/* Entry */}
-                        <span className="font-mono text-foreground/70 text-right">
+                        <span className="w-8 flex-shrink-0 font-mono text-foreground/70 text-right">{trade.quantity ?? '—'}</span>
+                        <span className="w-14 flex-shrink-0 font-mono text-foreground/70 text-right">
                           {trade.entry_price != null ? `$${trade.entry_price.toFixed(3)}` : '—'}
                         </span>
-
-                        {/* Current (use exit if closed, entry if open) */}
-                        <span className="font-mono text-foreground/70 text-right">
-                          {trade.exit_price != null ? `$${trade.exit_price.toFixed(3)}` : trade.entry_price != null ? `$${trade.entry_price.toFixed(3)}` : '—'}
+                        <span className="w-14 flex-shrink-0 font-mono text-muted-foreground text-right">
+                          {isOpen ? <span className="text-muted-foreground/50">open</span> : `$${trade.exit_price.toFixed(3)}`}
                         </span>
-
-                        {/* Exit */}
-                        <span className="font-mono text-muted-foreground text-right">
-                          {isOpen ? <span className="text-muted-foreground/60">open</span> : `$${trade.exit_price.toFixed(3)}`}
-                        </span>
-
-                        {/* P&L */}
-                        <span className={cn('font-mono font-bold text-right', tradePositive ? 'text-primary' : 'text-destructive')}>
+                        <span className={cn('w-16 flex-shrink-0 font-mono font-bold text-right', tradePositive ? 'text-primary' : 'text-destructive')}>
                           {tradePositive ? '+' : ''}${tradePnl.toFixed(2)}
                         </span>
-
-                        {/* % */}
-                        <span className={cn('font-mono text-right', tradePositive ? 'text-primary/80' : 'text-destructive/80')}>
+                        <span className={cn('w-12 flex-shrink-0 font-mono text-right', tradePositive ? 'text-primary/70' : 'text-destructive/70')}>
                           {pnlPct != null && !isOpen ? `${pnlPct > 0 ? '+' : ''}${pnlPct.toFixed(1)}%` : <span className="text-muted-foreground/40">—</span>}
                         </span>
-
-                        {/* Time */}
-                        <span className="font-mono text-muted-foreground/60 text-right text-[10px]">{tradeTime}</span>
+                        <span className="w-10 flex-shrink-0 font-mono text-muted-foreground/50 text-right text-[10px]">{tradeTime}</span>
                       </div>
                     );
                   })}
