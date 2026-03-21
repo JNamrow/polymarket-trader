@@ -131,6 +131,7 @@ export default function Dashboard() {
             <div className="lg:col-span-2">
               <LiveBots
                 bots={liveBots}
+                trades={trades}
                 onPause={handlePause}
                 onResume={handleResume}
                 onStop={handleStop}
