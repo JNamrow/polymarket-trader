@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, BarChart3, Shuffle, MessageCircle, SlidersHorizontal } from 'lucide-react';
+import { TrendingUp, BarChart3, Shuffle, MessageCircle, SlidersHorizontal, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const algorithms = [
@@ -16,15 +16,21 @@ const algorithms = [
     icon: BarChart3,
   },
   {
+    id: 'market_making',
+    name: 'Market Making',
+    description: 'Post passive limit orders both sides (Avellaneda-Stoikov), earning spread on zero-fee markets',
+    icon: Layers,
+  },
+  {
     id: 'arbitrage',
     name: 'Arbitrage',
-    description: 'Exploit price discrepancies across related markets',
+    description: 'Exploit NegRisk multi-outcome mispricing where YES prices sum ≠ $1.00',
     icon: Shuffle,
   },
   {
     id: 'sentiment',
     name: 'Sentiment',
-    description: 'Use market volume and activity signals to find opportunities',
+    description: 'Use volume, order book imbalance, and Bayesian signals to find mispricings',
     icon: MessageCircle,
   },
   {
@@ -62,10 +68,7 @@ export default function AlgorithmSelector({ selected, onSelect }) {
                 <Icon className={cn("w-4 h-4", isSelected ? "text-primary" : "text-muted-foreground")} />
               </div>
               <div className="min-w-0">
-                <p className={cn(
-                  "text-sm font-medium",
-                  isSelected ? "text-primary" : "text-foreground"
-                )}>{name}</p>
+                <p className={cn("text-sm font-medium", isSelected ? "text-primary" : "text-foreground")}>{name}</p>
                 <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{description}</p>
               </div>
             </button>
