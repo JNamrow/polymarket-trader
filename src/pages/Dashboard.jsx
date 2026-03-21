@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import StatsRow from '../components/dashboard/StatsRow';
@@ -7,7 +7,7 @@ import LiveBots from '../components/dashboard/LiveBots';
 import CompletedRuns from '../components/dashboard/CompletedRuns';
 import NewBotModal from '../components/bot-setup/NewBotModal';
 import ExperimentModal from '../components/bot-setup/ExperimentModal';
-import { Activity, Plus, FlaskConical } from 'lucide-react';
+import { Activity, Plus, FlaskConical, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
@@ -30,7 +30,16 @@ export default function Dashboard() {
 
   const [showNewBot, setShowNewBot] = useState(false);
   const [showExperiment, setShowExperiment] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(user => {
+      if (user?.wallet_balance !== undefined) setWalletBalance(user.wallet_balance);
+    }).catch(() => {});
+  }, []);
   const liveBots = botRuns.filter(r => r.status === 'running' || r.status === 'paused');
+  const deployedFunds = liveBots.filter(b => !b.is_paper).reduce((sum, b) => sum + (b.fund_allocation || 0), 0);
+  const availableFunds = walletBalance !== null ? Math.max(0, walletBalance - deployedFunds) : null;
   const completedRuns = botRuns.filter(r => r.status === 'completed' || r.status === 'stopped');
 
   const handlePause = (bot) => updateMutation.mutate({ id: bot.id, data: { status: 'paused' } });
@@ -55,6 +64,15 @@ export default function Dashboard() {
         <div className="flex items-center gap-3">
           <Activity className="w-5 h-5 text-primary" />
           <h1 className="text-lg font-semibold text-foreground">Dashboard</h1>
+          {availableFunds !== null && (
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-secondary border border-border">
+              <Wallet className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">Available</span>
+              <span className={`text-xs font-mono font-semibold ${availableFunds > 0 ? 'text-primary' : 'text-destructive'}`}>
+                ${availableFunds.toFixed(2)}
+              </span>
+            </div>
+          )}
         </div>
         <div className="flex gap-2">
           <Button
