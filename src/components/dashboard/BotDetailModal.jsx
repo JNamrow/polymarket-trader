@@ -81,14 +81,16 @@ function generateLLMCalls(bot) {
 function TerminalPanel({ bot }) {
   const logRef = useRef(null);
   const [visibleLines, setVisibleLines] = useState([]);
-  const allLines = generateTerminalLog(bot);
+  const allLinesRef = useRef(generateTerminalLog(bot));
 
   useEffect(() => {
+    allLinesRef.current = generateTerminalLog(bot);
     setVisibleLines([]);
     let i = 0;
     const interval = setInterval(() => {
-      if (i < allLines.length) {
-        setVisibleLines(prev => [...prev, allLines[i]]);
+      if (i < allLinesRef.current.length) {
+        const line = allLinesRef.current[i];
+        if (line) setVisibleLines(prev => [...prev, line]);
         i++;
       } else {
         clearInterval(interval);
@@ -132,13 +134,13 @@ function TerminalPanel({ bot }) {
       {/* log lines */}
       <div ref={logRef} className="flex-1 overflow-y-auto p-4 space-y-0.5 font-mono text-[11px] leading-relaxed">
         <p className="text-slate-600 mb-2 select-none">{'>'} bot-runtime v2.4.1 — polymarket CLOB interface</p>
-        {visibleLines.map((line, i) => (
+        {visibleLines.filter(Boolean).map((line, i) => (
           <div key={i} className="flex gap-2">
             <span className="text-slate-600 flex-shrink-0 select-none">[{line.t}]</span>
             <span className={color[line.type] || 'text-slate-300'}>{line.msg}</span>
           </div>
         ))}
-        {visibleLines.length < allLines.length && (
+        {visibleLines.length < allLinesRef.current.length && (
           <div className="flex gap-2 mt-1">
             <span className="text-slate-600 select-none">{'>'}</span>
             <span className="w-2 h-3.5 bg-emerald-400 animate-pulse inline-block" />
