@@ -1,0 +1,85 @@
+{
+  "name": "Trade",
+  "type": "object",
+  "properties": {
+    "bot_run_id": {
+      "type": "string",
+      "description": "Associated bot run ID"
+    },
+    "market_name": {
+      "type": "string"
+    },
+    "side": {
+      "type": "string",
+      "enum": [
+        "buy",
+        "sell"
+      ]
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "description": "YES or NO token traded"
+    },
+    "entry_price": {
+      "type": "number"
+    },
+    "exit_price": {
+      "type": "number"
+    },
+    "quantity": {
+      "type": "number"
+    },
+    "pnl": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "closed"
+      ],
+      "default": "open"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "order_type": {
+      "type": "string",
+      "enum": [
+        "GTC",
+        "GTD",
+        "FOK",
+        "FAK"
+      ],
+      "default": "GTC"
+    },
+    "edge_at_entry": {
+      "type": "number",
+      "description": "Estimated edge (%) at time of entry vs market price"
+    },
+    "kelly_fraction": {
+      "type": "number",
+      "description": "Kelly fraction applied to this trade"
+    },
+    "neg_risk": {
+      "type": "boolean",
+      "default": false
+    },
+    "market_id": {
+      "type": "string",
+      "description": "Polymarket token/condition ID"
+    }
+  },
+  "required": [
+    "bot_run_id",
+    "market_name",
+    "side",
+    "entry_price",
+    "quantity"
+  ]
+}

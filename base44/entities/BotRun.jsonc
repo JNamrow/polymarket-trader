@@ -1,0 +1,126 @@
+{
+  "name": "BotRun",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Bot run name/identifier"
+    },
+    "algorithm": {
+      "type": "string",
+      "enum": [
+        "momentum",
+        "mean_reversion",
+        "market_making",
+        "arbitrage",
+        "sentiment",
+        "custom"
+      ],
+      "description": "Trading algorithm used"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Market categories targeted"
+    },
+    "fund_allocation": {
+      "type": "number",
+      "description": "USDC amount allocated"
+    },
+    "duration_hours": {
+      "type": "number",
+      "description": "Planned duration in hours"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "paused",
+        "completed",
+        "stopped"
+      ],
+      "default": "running"
+    },
+    "is_paper": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, this is a paper trading experiment (no real funds)"
+    },
+    "current_value": {
+      "type": "number",
+      "description": "Current portfolio value for this run"
+    },
+    "pnl": {
+      "type": "number",
+      "description": "Profit/Loss amount"
+    },
+    "pnl_percent": {
+      "type": "number",
+      "description": "Profit/Loss percentage"
+    },
+    "positions_bought": {
+      "type": "number",
+      "default": 0
+    },
+    "positions_sold": {
+      "type": "number",
+      "default": 0
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "end_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "custom_params": {
+      "type": "object",
+      "description": "Custom algorithm parameters"
+    },
+    "pnl_history": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Historical P&L data points"
+    },
+    "kelly_fraction": {
+      "type": "number",
+      "description": "Kelly fraction used for sizing (e.g. 0.25 = quarter-Kelly)",
+      "default": 0.25
+    },
+    "order_type": {
+      "type": "string",
+      "enum": [
+        "GTC",
+        "GTD",
+        "FOK",
+        "FAK"
+      ],
+      "default": "GTC",
+      "description": "CLOB order type"
+    },
+    "neg_risk": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this bot trades NegRisk multi-outcome markets"
+    },
+    "vpin": {
+      "type": "number",
+      "description": "Latest VPIN reading (toxic flow indicator, 0-1)"
+    },
+    "avg_edge": {
+      "type": "number",
+      "description": "Average edge % across all trades in this run"
+    }
+  },
+  "required": [
+    "name",
+    "algorithm",
+    "fund_allocation",
+    "status"
+  ]
+}
