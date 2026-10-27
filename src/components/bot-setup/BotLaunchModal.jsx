@@ -11,8 +11,8 @@ import CategoryFilter from './CategoryFilter';
 import SuggestedDuration from './SuggestedDuration';
 import CustomParams from './CustomParams';
 import RiskControls from './RiskControls';
-import { DEFAULT_RISK } from '../../../base44/shared/engine/sizing.js';
-import { ENGINE_VERSION } from '../../../base44/shared/engine/tick.js';
+import { DEFAULT_RISK } from '@/engine/sizing.js';
+import { ENGINE_VERSION } from '@/engine/tick.js';
 import { formatUsd } from '@/api/polymarket';
 
 const KELLY_OPTIONS = [

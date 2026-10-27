@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { executeTick, liquidateBot } from '../../../base44/shared/engine/engine.js';
+import { executeTick, liquidateBot } from '@/engine/engine.js';
 
 export const TICK_INTERVAL_MS = 60_000;
 

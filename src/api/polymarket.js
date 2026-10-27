@@ -1,9 +1,9 @@
 /**
  * Polymarket public API client for the frontend.
  *
- * The real implementation lives in base44/shared/engine/polymarketApi.js so
- * the backend tick function can use the same code. This file re-exports it
- * and adds a few browser-only helpers.
+ * The real implementation lives in src/engine/polymarketApi.js (mirrored to
+ * base44/shared/engine for the backend tick function). This file re-exports
+ * it and adds a few browser-only helpers.
  */
 export {
   GAMMA_API,
@@ -21,7 +21,7 @@ export {
   fetchPositions,
   fetchWalletTrades,
   fetchPortfolioValue,
-} from '../../base44/shared/engine/polymarketApi.js';
+} from '@/engine/polymarketApi.js';
 
 export {
   CATEGORY_TAGS,
@@ -31,9 +31,9 @@ export {
   flattenEvents,
   hoursToEnd,
   sidePrices,
-} from '../../base44/shared/engine/markets.js';
+} from '@/engine/markets.js';
 
-import { POLYMARKET_SITE } from '../../base44/shared/engine/markets.js';
+import { POLYMARKET_SITE } from '@/engine/markets.js';
 
 export function profileUrl(address) {
   return `${POLYMARKET_SITE}/profile/${address}`;

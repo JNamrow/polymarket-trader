@@ -11,7 +11,7 @@ Today the app **paper trades on real market data**. It reads real prices, real o
 ## What the app does
 
 - **Bots** — launch paper experiments or live-allocation bots with one of six strategies, a Kelly fraction, an order type, categories, duration and risk controls (max positions, stop-loss %, take-profit %, max % per position).
-- **Engine** — a shared, pure trading engine (`base44/shared/engine`) that runs in the browser while the dashboard is open and in a scheduled Base44 backend function every 5 minutes when it is not. Both sides skip a bot the other side ticked recently.
+- **Engine** — a shared, pure trading engine (`src/engine`, mirrored to `base44/shared/engine`) that runs in the browser while the dashboard is open and in a scheduled Base44 backend function every 5 minutes when it is not. Both sides skip a bot the other side ticked recently.
 - **Bot detail** — live activity log straight from the engine (scans, signals, fills, exits, errors), open positions marked at the current bid, closed trades with exit reasons, the bot's P&L curve, and an optional AI brief of the run (Base44 LLM integration).
 - **Markets** — a live explorer of Polymarket markets by category: YES price, 24h move, spread, 24h volume, liquidity, time to resolution, 7-day price history and order-book imbalance, with links to Polymarket.
 - **Watchlist** — the real Polymarket leaderboard (24h / 7d / 30d / all time, by P&L or volume) and any wallets you choose to track, each expandable to its live open positions.
@@ -64,10 +64,10 @@ Real orders need an EIP-712 signature from a wallet key plus CLOB API credential
 │    Watchlist / Settings     │        │  functions/botTick (Deno, cron)  │
 │  • useBotEngine (1 min)     │        │  integrations.Core.InvokeLLM     │
 └──────────────┬──────────────┘        └───────────────┬──────────────────┘
-               │ imports                               │ imports
+               │ imports src/engine                    │ imports base44/shared/engine
                ▼                                       ▼
         ┌──────────────────────────────────────────────────────┐
-        │  base44/shared/engine  (pure JS, runs in both)       │
+        │  the engine  (pure JS, same files in both places)    │
         │  markets.js   normalize Gamma markets/events         │
         │  strategies.js six strategies, scan() + exitReason() │
         │  sizing.js    Kelly, caps, basket sizing             │
@@ -83,7 +83,7 @@ Real orders need an EIP-712 signature from a wallet key plus CLOB API credential
 
 - **Frontend**: React 18, Vite, Tailwind, shadcn/ui, TanStack Query, Recharts. Pages live in `src/pages`, feature components in `src/components/{dashboard,bot-setup,markets,watchlist}`.
 - **Base44**: hosting, auth, the entity database and the LLM integration. The SDK client is `src/api/base44Client.js`. Entity schemas are in `base44/entities/*.jsonc`.
-- **Engine**: `base44/shared/engine` has no React and no SDK calls. `executeTick` takes an `api` adapter (`createTrades`, `updateTrades`, `updateBot`) so the browser uses the user's client and the backend uses the service role.
+- **Engine**: `src/engine` has no React and no SDK calls. `executeTick` takes an `api` adapter (`createTrades`, `updateTrades`, `updateBot`) so the browser uses the user's client and the backend uses the service role. Base44's preview sandbox only serves `src/`, and backend functions can only import from `base44/shared/`, so the engine is edited in `src/engine` and copied to `base44/shared/engine` with `npm run engine:sync` (`npm run lint` fails if the copies differ).
 - **Scheduler**: `base44/functions/botTick/function.jsonc` declares a 5-minute automation. The browser hook ticks every 60 s; whichever side ticked a bot within the last few minutes wins, so there is no double processing.
 
 ### Data model
@@ -101,8 +101,10 @@ base44/
   config.jsonc              app name + site build settings
   entities/                 BotRun, Trade, User schemas
   functions/botTick/        scheduled engine tick (entry.ts + function.jsonc)
-  shared/engine/            the trading engine (shared by frontend and backend)
+  shared/engine/            mirror of src/engine for the backend function (npm run engine:sync)
+scripts/sync-engine.mjs     copies / checks that mirror
 src/
+  engine/                   the trading engine: markets, strategies, sizing, tick, engine, polymarketApi
   api/base44Client.js       Base44 SDK client
   api/polymarket.js         Polymarket API re-exports + formatting helpers
   lib/engine/useBotEngine.js  in-browser scheduler for the engine
@@ -126,7 +128,7 @@ npx base44 link       # writes the git-ignored base44/.app.jsonc for this app
 npx base44 dev        # local backend + Vite dev server
 ```
 
-`npm run build` builds the site, `npm run lint` runs ESLint. The engine can be exercised from Node or Deno without the UI by importing `base44/shared/engine/engine.js` and passing an in-memory `api` adapter.
+`npm run build` builds the site, `npm run lint` runs ESLint and checks the engine mirror, `npm run engine:sync` refreshes the mirror after editing `src/engine`. The engine can be exercised from Node or Deno without the UI by importing `src/engine/engine.js` and passing an in-memory `api` adapter.
 
 ## Base44 ↔ GitHub sync
 
