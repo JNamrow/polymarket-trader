@@ -1,0 +1,15 @@
+{
+  "name": "botTick",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "bot_tick_every_5_min",
+      "description": "Advance every running bot: scan live Polymarket markets, open/close paper positions, mark open ones to market.",
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 5
+    }
+  ]
+}

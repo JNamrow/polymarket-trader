@@ -7,7 +7,33 @@
       "description": "Associated bot run ID"
     },
     "market_name": {
+      "type": "string",
+      "description": "Market question"
+    },
+    "market_id": {
+      "type": "string",
+      "description": "Polymarket condition ID"
+    },
+    "gamma_market_id": {
+      "type": "string",
+      "description": "Gamma API market id"
+    },
+    "token_id": {
+      "type": "string",
+      "description": "CLOB token id of the outcome held"
+    },
+    "event_title": {
       "type": "string"
+    },
+    "event_slug": {
+      "type": "string"
+    },
+    "market_slug": {
+      "type": "string"
+    },
+    "market_url": {
+      "type": "string",
+      "description": "Link to the market on polymarket.com"
     },
     "side": {
       "type": "string",
@@ -30,10 +56,23 @@
     "exit_price": {
       "type": "number"
     },
+    "current_price": {
+      "type": "number",
+      "description": "Latest mark (bid) while open"
+    },
     "quantity": {
-      "type": "number"
+      "type": "number",
+      "description": "Shares"
+    },
+    "size_usdc": {
+      "type": "number",
+      "description": "Cost at entry"
     },
     "pnl": {
+      "type": "number",
+      "description": "Realized P&L once closed"
+    },
+    "unrealized_pnl": {
       "type": "number"
     },
     "status": {
@@ -47,6 +86,13 @@
     "timestamp": {
       "type": "string",
       "format": "date-time"
+    },
+    "exit_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "exit_reason": {
+      "type": "string"
     },
     "order_type": {
       "type": "string",
@@ -62,6 +108,10 @@
       "type": "number",
       "description": "Estimated edge (%) at time of entry vs market price"
     },
+    "est_prob": {
+      "type": "number",
+      "description": "Strategy's estimated win probability at entry"
+    },
     "kelly_fraction": {
       "type": "number",
       "description": "Kelly fraction applied to this trade"
@@ -70,9 +120,32 @@
       "type": "boolean",
       "default": false
     },
-    "market_id": {
+    "fill_mode": {
       "type": "string",
-      "description": "Polymarket token/condition ID"
+      "description": "paper | simulated | live, with a -maker suffix for passive fills"
+    },
+    "strategy": {
+      "type": "string"
+    },
+    "signal": {
+      "type": "string",
+      "description": "Signal id that opened the position"
+    },
+    "signal_value": {
+      "type": "number",
+      "description": "Signal magnitude at entry (price move, imbalance, spread, edge)"
+    },
+    "signal_reason": {
+      "type": "string",
+      "description": "Human-readable reason for the entry"
+    },
+    "basket_id": {
+      "type": "string",
+      "description": "Groups the legs of an arbitrage basket"
+    },
+    "basket_payout": {
+      "type": "number",
+      "description": "Guaranteed payout per set for a basket leg"
     }
   },
   "required": [

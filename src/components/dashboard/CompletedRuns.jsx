@@ -4,46 +4,43 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import BotDetailModal from './BotDetailModal';
+import { ALGORITHM_LABELS, FillModeBadge } from './LiveBots';
+import { formatSignedUsd } from '@/api/polymarket';
 
-const algorithmLabels = {
-  momentum: 'Momentum',
-  mean_reversion: 'Mean Rev.',
-  arbitrage: 'Arbitrage',
-  sentiment: 'Sentiment',
-  custom: 'Custom',
-};
+function runDuration(run) {
+  if (!run.start_time || !run.end_time) return '—';
+  const hours = (new Date(run.end_time) - new Date(run.start_time)) / 3_600_000;
+  if (hours >= 48) return `${(hours / 24).toFixed(1)}d`;
+  if (hours >= 1) return `${hours.toFixed(1)}h`;
+  return `${Math.max(1, Math.round(hours * 60))}m`;
+}
 
 function RunRow({ run, onClick }) {
-  const pnl = run.pnl || 0;
+  const pnl = Number(run.pnl) || 0;
   const isPositive = pnl >= 0;
-  const duration = run.start_time && run.end_time
-    ? `${Math.round((new Date(run.end_time) - new Date(run.start_time)) / 3600000)}h`
-    : '—';
 
   return (
-    <div
-      className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/50 transition-colors cursor-pointer"
-      onClick={onClick}
-    >
-      <span className="text-xs font-mono text-muted-foreground w-16 flex-shrink-0">#{run.id?.slice(-6)}</span>
+    <div className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/50 transition-colors cursor-pointer" onClick={onClick}>
+      <span className="text-xs font-mono text-muted-foreground w-24 flex-shrink-0 truncate" title={run.name}>
+        {run.name || `#${run.id?.slice(-6)}`}
+      </span>
       <Badge variant="outline" className="text-xs border-border text-muted-foreground flex-shrink-0">
-        {algorithmLabels[run.algorithm] || run.algorithm}
+        {ALGORITHM_LABELS[run.algorithm] || run.algorithm}
       </Badge>
-      <span className="text-xs text-muted-foreground flex-shrink-0 hidden sm:block">{run.categories?.join(', ') || '—'}</span>
+      <FillModeBadge bot={run} className="hidden sm:flex" />
+      <span className="text-xs text-muted-foreground flex-shrink-0 hidden lg:block">{run.categories?.join(', ') || '—'}</span>
       <span className="text-xs text-muted-foreground font-mono flex-shrink-0 hidden md:block">
         {run.start_time ? format(new Date(run.start_time), 'MMM d, HH:mm') : '—'}
       </span>
-      <span className="text-xs text-muted-foreground font-mono flex-shrink-0">{duration}</span>
+      <span className="text-xs text-muted-foreground font-mono flex-shrink-0">{runDuration(run)}</span>
       <span className="text-xs text-muted-foreground font-mono flex-shrink-0 hidden sm:block">
         B:{run.positions_bought || 0} / S:{run.positions_sold || 0}
       </span>
-      <span className={cn('text-sm font-mono font-semibold ml-auto', isPositive ? 'text-primary' : 'text-destructive')}>
-        {isPositive ? '+' : ''}${pnl.toFixed(2)}
-      </span>
-      <Badge variant="outline" className={cn(
-        'text-xs flex-shrink-0',
-        run.status === 'completed' ? 'text-primary border-primary/30' : 'text-destructive border-destructive/30'
-      )}>
+      <span className={cn('text-sm font-mono font-semibold ml-auto', isPositive ? 'text-primary' : 'text-destructive')}>{formatSignedUsd(pnl)}</span>
+      <Badge
+        variant="outline"
+        className={cn('text-xs flex-shrink-0', run.status === 'completed' ? 'text-primary border-primary/30' : 'text-destructive border-destructive/30')}
+      >
         {run.status}
       </Badge>
     </div>
@@ -52,7 +49,7 @@ function RunRow({ run, onClick }) {
 
 export default function CompletedRuns({ runs, trades }) {
   const [selectedRun, setSelectedRun] = useState(null);
-  const totalPnl = runs.reduce((sum, r) => sum + (r.pnl || 0), 0);
+  const totalPnl = runs.reduce((sum, r) => sum + (Number(r.pnl) || 0), 0);
   const isPositive = totalPnl >= 0;
 
   if (runs.length === 0) {
@@ -75,14 +72,15 @@ export default function CompletedRuns({ runs, trades }) {
         <div className="flex items-center justify-between p-4 lg:p-5 border-b border-border">
           <h3 className="text-sm font-medium text-foreground">Completed Runs</h3>
           <span className={cn('text-sm font-mono font-semibold', isPositive ? 'text-primary' : 'text-destructive')}>
-            Total: {isPositive ? '+' : ''}${totalPnl.toFixed(2)}
+            Total: {formatSignedUsd(totalPnl)}
           </span>
         </div>
 
         <div className="flex items-center gap-3 px-4 py-2 border-b border-border bg-muted/30 text-xs text-muted-foreground">
-          <span className="w-16 flex-shrink-0">Run ID</span>
+          <span className="w-24 flex-shrink-0">Run</span>
           <span className="flex-shrink-0">Algorithm</span>
-          <span className="flex-shrink-0 hidden sm:block">Category</span>
+          <span className="flex-shrink-0 hidden sm:block">Mode</span>
+          <span className="flex-shrink-0 hidden lg:block">Categories</span>
           <span className="flex-shrink-0 hidden md:block">Start</span>
           <span className="flex-shrink-0">Duration</span>
           <span className="flex-shrink-0 hidden sm:block">Positions</span>
@@ -97,12 +95,7 @@ export default function CompletedRuns({ runs, trades }) {
         </div>
       </div>
 
-      <BotDetailModal
-        bot={selectedRun}
-        trades={trades}
-        open={!!selectedRun}
-        onClose={() => setSelectedRun(null)}
-      />
+      <BotDetailModal bot={selectedRun} trades={trades} open={!!selectedRun} onClose={() => setSelectedRun(null)} />
     </>
   );
 }

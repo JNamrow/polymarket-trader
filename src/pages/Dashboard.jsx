@@ -1,16 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import StatsRow from '../components/dashboard/StatsRow';
 import PnlChart from '../components/dashboard/PnlChart';
 import LiveBots from '../components/dashboard/LiveBots';
 import CompletedRuns from '../components/dashboard/CompletedRuns';
-import NewBotModal from '../components/bot-setup/NewBotModal';
-import ExperimentModal from '../components/bot-setup/ExperimentModal';
+import EngineStatus from '../components/dashboard/EngineStatus';
+import BotLaunchModal from '../components/bot-setup/BotLaunchModal';
+import MarketsExplorer from '../components/markets/MarketsExplorer';
 import Watchlist from '../components/watchlist/Watchlist';
-import { Activity, Plus, FlaskConical, Wallet, Eye } from 'lucide-react';
+import { Activity, Plus, FlaskConical, Wallet, Eye, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useBotEngine } from '@/lib/engine/useBotEngine';
+import { useUserProfile, useWalletFunds } from '@/lib/useUserProfile';
+import { formatUsd } from '@/api/polymarket';
+
+const TABS = [
+  { id: 'bots', label: 'My Bots', icon: Activity },
+  { id: 'markets', label: 'Markets', icon: BarChart3 },
+  { id: 'watchlist', label: 'Watchlist', icon: Eye },
+];
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
@@ -18,12 +29,18 @@ export default function Dashboard() {
   const { data: botRuns = [], isLoading } = useQuery({
     queryKey: ['botRuns'],
     queryFn: () => base44.entities.BotRun.list('-created_date', 100),
+    refetchInterval: 30_000,
   });
 
   const { data: trades = [] } = useQuery({
     queryKey: ['trades'],
-    queryFn: () => base44.entities.Trade.list('-created_date', 500),
+    queryFn: () => base44.entities.Trade.list('-created_date', 1000),
+    refetchInterval: 30_000,
   });
+
+  const { user } = useUserProfile();
+  const walletFunds = useWalletFunds(user?.polymarket_address);
+  const engine = useBotEngine({ bots: botRuns, trades });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.BotRun.update(id, data),
@@ -31,26 +48,27 @@ export default function Dashboard() {
   });
 
   const [activeTab, setActiveTab] = useState('bots');
-  const [showNewBot, setShowNewBot] = useState(false);
-  const [showExperiment, setShowExperiment] = useState(false);
-  const [walletBalance, setWalletBalance] = useState(null);
+  const [launchMode, setLaunchMode] = useState(null); // 'paper' | 'live' | null
 
-  useEffect(() => {
-    base44.auth.me().then(user => {
-      if (user?.wallet_balance !== undefined) setWalletBalance(user.wallet_balance);
-    }).catch(() => {});
-  }, []);
   const liveBots = botRuns.filter(r => r.status === 'running' || r.status === 'paused');
-  const deployedFunds = liveBots.filter(b => !b.is_paper).reduce((sum, b) => sum + (b.fund_allocation || 0), 0);
-  const availableFunds = walletBalance !== null ? Math.max(0, walletBalance - deployedFunds) : null;
   const completedRuns = botRuns.filter(r => r.status === 'completed' || r.status === 'stopped');
+  const runningCount = botRuns.filter(r => r.status === 'running').length;
+  const deployedLive = liveBots.filter(b => !b.is_paper).reduce((sum, b) => sum + (b.fund_allocation || 0), 0);
 
-  const handlePause = (bot) => updateMutation.mutate({ id: bot.id, data: { status: 'paused' } });
-  const handleResume = (bot) => updateMutation.mutate({ id: bot.id, data: { status: 'running' } });
-  const handleStop = (bot) => updateMutation.mutate({
-    id: bot.id,
-    data: { status: 'stopped', end_time: new Date().toISOString() }
-  });
+  const walletCash = walletFunds.data?.cash ?? (user?.wallet_balance != null && user.wallet_balance !== '' ? Number(user.wallet_balance) : null);
+  const availableFunds = walletCash != null ? Math.max(0, walletCash - deployedLive) : null;
+  const fundsSource = walletFunds.data ? 'live USDC balance of your Polymarket wallet' : walletCash != null ? 'manual balance from Settings' : null;
+
+  const handlePause = bot => updateMutation.mutate({ id: bot.id, data: { status: 'paused' } });
+  const handleResume = bot => updateMutation.mutate({ id: bot.id, data: { status: 'running' } });
+  const handleStop = async bot => {
+    try {
+      const result = await engine.stopBot(bot);
+      toast.success(`${bot.name} stopped — ${result.closes} position${result.closes === 1 ? '' : 's'} closed`);
+    } catch (err) {
+      toast.error(err?.message || 'Could not stop the bot');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -59,11 +77,6 @@ export default function Dashboard() {
       </div>
     );
   }
-
-  const TABS = [
-    { id: 'bots', label: 'My Bots', icon: Activity },
-    { id: 'watchlist', label: 'Watchlist', icon: Eye },
-  ];
 
   return (
     <div className="space-y-4 lg:space-y-5">
@@ -77,9 +90,7 @@ export default function Dashboard() {
                 onClick={() => setActiveTab(id)}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
-                  activeTab === id
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
+                  activeTab === id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -88,19 +99,23 @@ export default function Dashboard() {
             ))}
           </div>
           {activeTab === 'bots' && availableFunds !== null && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary border border-border">
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary border border-border"
+              title={`Available = ${fundsSource} minus funds allocated to live bots`}
+            >
               <Wallet className="w-3 h-3 text-muted-foreground" />
               <span className="hidden sm:inline text-xs text-muted-foreground">Available</span>
-              <span className={`text-xs font-mono font-semibold ${availableFunds > 0 ? 'text-primary' : 'text-destructive'}`}>
-                ${availableFunds.toFixed(2)}
+              <span className={cn('text-xs font-mono font-semibold', availableFunds > 0 ? 'text-primary' : 'text-destructive')}>
+                {formatUsd(availableFunds)}
               </span>
             </div>
           )}
+          {activeTab === 'bots' && <EngineStatus engine={engine} runningCount={runningCount} />}
         </div>
         {activeTab === 'bots' && (
           <div className="flex gap-2 flex-shrink-0">
             <Button
-              onClick={() => setShowExperiment(true)}
+              onClick={() => setLaunchMode('paper')}
               variant="outline"
               size="sm"
               className="h-8 border-violet-500/30 bg-violet-500/5 text-violet-400 hover:bg-violet-500/10 hover:text-violet-300 font-medium rounded-lg px-2.5"
@@ -109,7 +124,7 @@ export default function Dashboard() {
               <span className="hidden sm:inline ml-1.5">Experiment</span>
             </Button>
             <Button
-              onClick={() => setShowNewBot(true)}
+              onClick={() => setLaunchMode('live')}
               size="sm"
               className="h-8 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg px-2.5"
             >
@@ -120,8 +135,14 @@ export default function Dashboard() {
         )}
       </div>
 
-      <NewBotModal open={showNewBot} onClose={() => setShowNewBot(false)} />
-      <ExperimentModal open={showExperiment} onClose={() => setShowExperiment(false)} />
+      <BotLaunchModal
+        open={launchMode !== null}
+        mode={launchMode || 'paper'}
+        onClose={() => setLaunchMode(null)}
+        availableFunds={availableFunds}
+        defaults={{ fund: user?.default_fund, algorithm: user?.default_algorithm }}
+        onLaunched={bot => engine.tickNow([bot])}
+      />
 
       {activeTab === 'bots' && (
         <>
@@ -137,6 +158,8 @@ export default function Dashboard() {
                 onPause={handlePause}
                 onResume={handleResume}
                 onStop={handleStop}
+                onTick={bot => engine.tickNow([bot])}
+                engineBusy={engine.running}
               />
             </div>
           </div>
@@ -144,6 +167,7 @@ export default function Dashboard() {
         </>
       )}
 
+      {activeTab === 'markets' && <MarketsExplorer />}
       {activeTab === 'watchlist' && <Watchlist />}
     </div>
   );

@@ -23,7 +23,7 @@
       "items": {
         "type": "string"
       },
-      "description": "Market categories targeted"
+      "description": "Market categories targeted (app category ids, mapped to Polymarket tags)"
     },
     "fund_allocation": {
       "type": "number",
@@ -48,9 +48,18 @@
       "default": false,
       "description": "If true, this is a paper trading experiment (no real funds)"
     },
+    "fill_mode": {
+      "type": "string",
+      "enum": [
+        "paper",
+        "simulated",
+        "live"
+      ],
+      "description": "paper = experiment; simulated = live bot without a connected signer; live = real orders"
+    },
     "current_value": {
       "type": "number",
-      "description": "Current portfolio value for this run"
+      "description": "Current portfolio value for this run (allocation + realized + unrealized)"
     },
     "pnl": {
       "type": "number",
@@ -60,11 +69,23 @@
       "type": "number",
       "description": "Profit/Loss percentage"
     },
+    "realized_pnl": {
+      "type": "number",
+      "description": "P&L from closed positions"
+    },
+    "unrealized_pnl": {
+      "type": "number",
+      "description": "Mark-to-market P&L of open positions (marked at the bid)"
+    },
     "positions_bought": {
       "type": "number",
       "default": 0
     },
     "positions_sold": {
+      "type": "number",
+      "default": 0
+    },
+    "open_positions": {
       "type": "number",
       "default": 0
     },
@@ -78,14 +99,21 @@
     },
     "custom_params": {
       "type": "object",
-      "description": "Custom algorithm parameters"
+      "description": "Custom algorithm parameters: entry, exit (YES price thresholds), maxPositions"
     },
     "pnl_history": {
       "type": "array",
       "items": {
         "type": "object"
       },
-      "description": "Historical P&L data points"
+      "description": "P&L points { time, pnl, value }, one per engine tick"
+    },
+    "activity_log": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Engine log lines { t, type, msg } (last 150)"
     },
     "kelly_fraction": {
       "type": "number",
@@ -108,13 +136,59 @@
       "default": false,
       "description": "Whether this bot trades NegRisk multi-outcome markets"
     },
+    "max_positions": {
+      "type": "number",
+      "description": "Maximum concurrent open positions"
+    },
+    "stop_loss_pct": {
+      "type": "number",
+      "description": "Close a position when it is down this % of its cost"
+    },
+    "take_profit_pct": {
+      "type": "number",
+      "description": "Close a position when it is up this % of its cost"
+    },
+    "max_position_pct": {
+      "type": "number",
+      "description": "Max % of the allocation in one position"
+    },
     "vpin": {
       "type": "number",
       "description": "Latest VPIN reading (toxic flow indicator, 0-1)"
     },
     "avg_edge": {
       "type": "number",
-      "description": "Average edge % across all trades in this run"
+      "description": "Average estimated edge % at entry across all trades in this run"
+    },
+    "markets_scanned": {
+      "type": "number",
+      "description": "Markets in the universe on the last tick"
+    },
+    "ticks": {
+      "type": "number",
+      "default": 0,
+      "description": "Engine ticks run so far"
+    },
+    "last_tick_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the engine last processed this bot (browser or backend)"
+    },
+    "last_error": {
+      "type": "string",
+      "description": "Last engine error, cleared on the next good tick"
+    },
+    "entry_cooldowns": {
+      "type": "object",
+      "description": "conditionId → ISO time until which the bot will not re-enter that market"
+    },
+    "engine_version": {
+      "type": "string"
+    },
+    "server_tick": {
+      "type": "boolean",
+      "default": true,
+      "description": "Let the scheduled backend function tick this bot when no browser is open"
     }
   },
   "required": [
