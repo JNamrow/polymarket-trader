@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Settings as SettingsIcon, Wallet, DollarSign, Save, ExternalLink, Plug, ShieldAlert, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Settings as SettingsIcon, Wallet, DollarSign, Save, ExternalLink, Plug, ShieldAlert, RefreshCw, CheckCircle2, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { ALERT_DEFAULTS } from '@/engine/wallets.js';
 import { cn } from '@/lib/utils';
 import { useUserProfile, useWalletFunds } from '@/lib/useUserProfile';
 import { isAddress, hasBrowserWallet, connectBrowserWallet, getPolygonUsdc, explorerUrl, POLYGON_CHAIN_ID } from '@/lib/wallet';
@@ -31,6 +33,7 @@ export default function Settings() {
   const [defaultAlgorithm, setDefaultAlgorithm] = useState('momentum');
   const [browserWallet, setBrowserWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
+  const [alertPrefs, setAlertPrefs] = useState(ALERT_DEFAULTS);
 
   useEffect(() => {
     if (!user) return;
@@ -38,6 +41,7 @@ export default function Settings() {
     setWalletBalance(user.wallet_balance != null ? String(user.wallet_balance) : '');
     if (user.default_fund) setDefaultFund(user.default_fund);
     if (user.default_algorithm) setDefaultAlgorithm(user.default_algorithm);
+    setAlertPrefs({ ...ALERT_DEFAULTS, ...(user.whale_alerts || {}) });
   }, [user]);
 
   const trimmed = address.trim();
@@ -76,6 +80,7 @@ export default function Settings() {
         wallet_balance: walletBalance === '' ? null : Number(walletBalance),
         default_fund: Number(defaultFund) || 100,
         default_algorithm: defaultAlgorithm,
+        whale_alerts: { ...alertPrefs, minUsd: Number(alertPrefs.minUsd) || ALERT_DEFAULTS.minUsd },
       });
       toast.success('Settings saved');
     } catch (err) {
@@ -199,6 +204,35 @@ export default function Settings() {
             secrets, never in the browser. Until it exists, &quot;live&quot; bots use simulated fills and never move funds.
           </p>
         </div>
+      </Section>
+
+      {/* Whale alerts */}
+      <Section icon={Bell} title="Whale alerts" accent="text-primary">
+        <p className="text-xs text-muted-foreground">
+          Alerts show as toasts and in the bell menu on the Whales tab while the app is open. The scheduled scanner (whaleScan) stores the same signals on the server every 5 minutes.
+        </p>
+        <div className="space-y-2">
+          <label className="text-xs text-muted-foreground">Minimum fill size for contrarian alerts (USDC)</label>
+          <Input
+            type="number"
+            min={1000}
+            step={1000}
+            value={alertPrefs.minUsd}
+            onChange={e => setAlertPrefs(p => ({ ...p, minUsd: e.target.value }))}
+            className="bg-transparent border-border font-mono text-sm"
+          />
+          <p className="text-[11px] text-muted-foreground">Plain whale alerts (any side) fire at 4× this amount.</p>
+        </div>
+        {[
+          ['followed', 'Followed wallets trade'],
+          ['insiders', 'Potential insiders: fresh account plus a conviction bet'],
+          ['contrarian', 'Contrarian whales: big bets against the crowd'],
+        ].map(([key, label]) => (
+          <div key={key} className="flex items-center justify-between gap-3 text-xs">
+            <span className="text-foreground">{label}</span>
+            <Switch checked={alertPrefs[key] !== false} onCheckedChange={v => setAlertPrefs(p => ({ ...p, [key]: v }))} />
+          </div>
+        ))}
       </Section>
 
       {/* Defaults */}

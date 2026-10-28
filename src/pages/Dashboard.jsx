@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -9,8 +9,10 @@ import CompletedRuns from '../components/dashboard/CompletedRuns';
 import EngineStatus from '../components/dashboard/EngineStatus';
 import BotLaunchModal from '../components/bot-setup/BotLaunchModal';
 import MarketsExplorer from '../components/markets/MarketsExplorer';
-import Watchlist from '../components/watchlist/Watchlist';
-import { Activity, Plus, FlaskConical, Wallet, Eye, BarChart3 } from 'lucide-react';
+import WhalesTab from '../components/whales/WhalesTab';
+import { TraderDrawerProvider } from '../components/whales/TraderDrawer';
+import { LaunchContext } from '@/lib/launchContext';
+import { Activity, Rocket, FlaskConical, Wallet, Fish, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useBotEngine } from '@/lib/engine/useBotEngine';
@@ -20,7 +22,7 @@ import { formatUsd } from '@/api/polymarket';
 const TABS = [
   { id: 'bots', label: 'My Bots', icon: Activity },
   { id: 'markets', label: 'Markets', icon: BarChart3 },
-  { id: 'watchlist', label: 'Watchlist', icon: Eye },
+  { id: 'whales', label: 'Whales', icon: Fish },
 ];
 
 export default function Dashboard() {
@@ -48,7 +50,8 @@ export default function Dashboard() {
   });
 
   const [activeTab, setActiveTab] = useState('bots');
-  const [launchMode, setLaunchMode] = useState(null); // 'paper' | 'live' | null
+  const [launch, setLaunch] = useState(null); // { mode: 'paper' | 'live', pilot? } | null
+  const openLaunch = useCallback(({ mode = 'live', pilot = null } = {}) => setLaunch({ mode, pilot }), []);
 
   const liveBots = botRuns.filter(r => r.status === 'running' || r.status === 'paused');
   const completedRuns = botRuns.filter(r => r.status === 'completed' || r.status === 'stopped');
@@ -79,7 +82,9 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-4 lg:space-y-5">
+    <LaunchContext.Provider value={{ openLaunch }}>
+    <TraderDrawerProvider>
+      <div className="space-y-4 lg:space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
@@ -115,7 +120,7 @@ export default function Dashboard() {
         {activeTab === 'bots' && (
           <div className="flex gap-2 flex-shrink-0">
             <Button
-              onClick={() => setLaunchMode('paper')}
+              onClick={() => setLaunch({ mode: 'paper' })}
               variant="outline"
               size="sm"
               className="h-8 border-violet-500/30 bg-violet-500/5 text-violet-400 hover:bg-violet-500/10 hover:text-violet-300 font-medium rounded-lg px-2.5"
@@ -124,21 +129,22 @@ export default function Dashboard() {
               <span className="hidden sm:inline ml-1.5">Experiment</span>
             </Button>
             <Button
-              onClick={() => setLaunchMode('live')}
+              onClick={() => setLaunch({ mode: 'live' })}
               size="sm"
               className="h-8 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg px-2.5"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline ml-1.5">New Bot</span>
+              <Rocket className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline ml-1.5">Start portfolio</span>
             </Button>
           </div>
         )}
       </div>
 
       <BotLaunchModal
-        open={launchMode !== null}
-        mode={launchMode || 'paper'}
-        onClose={() => setLaunchMode(null)}
+        open={launch !== null}
+        mode={launch?.mode || 'paper'}
+        preset={launch}
+        onClose={() => setLaunch(null)}
         availableFunds={availableFunds}
         defaults={{ fund: user?.default_fund, algorithm: user?.default_algorithm }}
         onLaunched={bot => engine.tickNow([bot])}
@@ -168,7 +174,9 @@ export default function Dashboard() {
       )}
 
       {activeTab === 'markets' && <MarketsExplorer />}
-      {activeTab === 'watchlist' && <Watchlist />}
-    </div>
+      {activeTab === 'whales' && <WhalesTab />}
+      </div>
+    </TraderDrawerProvider>
+    </LaunchContext.Provider>
   );
 }

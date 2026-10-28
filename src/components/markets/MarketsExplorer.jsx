@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { fetchUniverse, fetchPriceHistory, fetchBook, CATEGORY_LABELS, formatUsd, formatCents, hoursToEnd } from '@/api/polymarket';
+import MarketWhales from '@/components/whales/MarketWhales';
 
 const SORTS = [
   { id: 'volume24h', label: '24h volume' },
@@ -116,6 +117,7 @@ function MarketDetail({ market }) {
           Open on Polymarket <ExternalLink className="w-3 h-3" />
         </a>
       </div>
+      <MarketWhales market={market} />
     </div>
   );
 }

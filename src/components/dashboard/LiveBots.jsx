@@ -14,7 +14,17 @@ export const ALGORITHM_LABELS = {
   arbitrage: 'Arbitrage',
   sentiment: 'Sentiment',
   custom: 'Custom',
+  copy: 'Copy trader',
 };
+
+/** "name1, name2" for a copy bot's pilots. */
+export function pilotNames(bot) {
+  return (Array.isArray(bot?.copy_wallets) ? bot.copy_wallets : [])
+    .map(w => (typeof w === 'string' ? w : w?.name || w?.address || ''))
+    .map(n => (n.startsWith('0x') && n.length > 12 ? `${n.slice(0, 6)}…${n.slice(-4)}` : n))
+    .filter(Boolean)
+    .join(', ');
+}
 
 export function FillModeBadge({ bot, className }) {
   if (bot.is_paper) {
@@ -43,15 +53,15 @@ export default function LiveBots({ bots, trades = [], onPause, onStop, onResume,
     return (
       <div className="bg-card border border-border rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-foreground">Live Trading Bots</h3>
+          <h3 className="text-sm font-medium text-foreground">Running portfolios</h3>
           <Zap className="w-4 h-4 text-muted-foreground" />
         </div>
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-3">
             <Zap className="w-5 h-5 text-muted-foreground" />
           </div>
-          <p className="text-sm text-muted-foreground">No active bots running</p>
-          <p className="text-xs text-muted-foreground mt-1">Start a paper experiment to see the engine trade live markets</p>
+          <p className="text-sm text-muted-foreground">Nothing running yet</p>
+          <p className="text-xs text-muted-foreground mt-1">Start a portfolio: pick an amount, then a trader to copy or a strategy to run</p>
         </div>
       </div>
     );
@@ -62,7 +72,7 @@ export default function LiveBots({ bots, trades = [], onPause, onStop, onResume,
   return (
     <div className="bg-card border border-border rounded-xl p-4 lg:p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-foreground">Live Trading Bots</h3>
+        <h3 className="text-sm font-medium text-foreground">Running portfolios</h3>
         <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 text-xs">
           {bots.length} Active
         </Badge>
@@ -96,6 +106,7 @@ export default function LiveBots({ bots, trades = [], onPause, onStop, onResume,
                   <Badge variant="outline" className="text-xs border-border text-muted-foreground">
                     {ALGORITHM_LABELS[bot.algorithm] || bot.algorithm}
                   </Badge>
+                  {bot.algorithm === 'copy' && <span className="text-xs text-muted-foreground truncate max-w-[180px]" title={pilotNames(bot)}>→ {pilotNames(bot)}</span>}
                   <FillModeBadge bot={bot} />
                   {bot.last_error && <AlertTriangle className="w-3 h-3 text-destructive" />}
                 </div>

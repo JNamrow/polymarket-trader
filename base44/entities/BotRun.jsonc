@@ -14,9 +14,10 @@
         "market_making",
         "arbitrage",
         "sentiment",
-        "custom"
+        "custom",
+        "copy"
       ],
-      "description": "Trading algorithm used"
+      "description": "Trading algorithm used; copy = mirror the wallets in copy_wallets"
     },
     "categories": {
       "type": "array",
@@ -184,6 +185,26 @@
     },
     "engine_version": {
       "type": "string"
+    },
+    "copy_wallets": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Copy bots: pilots to mirror [{ address, name, profileImage }]"
+    },
+    "copy_mode": {
+      "type": "string",
+      "enum": [
+        "mirror",
+        "new_only"
+      ],
+      "default": "mirror",
+      "description": "mirror = buy into the pilot's current book at launch; new_only = copy moves made after launch"
+    },
+    "copy_state": {
+      "type": "object",
+      "description": "Copy bots: last snapshot per pilot { address: { positions: { tokenId: shares }, value, syncedAt } }"
     },
     "server_tick": {
       "type": "boolean",

@@ -1,0 +1,15 @@
+{
+  "name": "whaleScan",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "whale_scan_every_5_min",
+      "description": "Store notable Polymarket fills (whales, contrarian bets, suspicious fresh accounts) as WhaleSignal rows.",
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 5
+    }
+  ]
+}

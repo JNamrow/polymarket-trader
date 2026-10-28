@@ -23,8 +23,8 @@ export function riskParams(bot) {
   const custom = bot.custom_params || {};
   return {
     maxPositions: Math.max(1, Math.round(num(bot.max_positions, num(custom.maxPositions, DEFAULT_RISK.maxPositions)))),
-    stopLossPct: Math.max(0.5, num(bot.stop_loss_pct, DEFAULT_RISK.stopLossPct)),
-    takeProfitPct: Math.max(0.5, num(bot.take_profit_pct, DEFAULT_RISK.takeProfitPct)),
+    stopLossPct: Math.max(0, num(bot.stop_loss_pct, DEFAULT_RISK.stopLossPct)), // 0 = off
+    takeProfitPct: Math.max(0, num(bot.take_profit_pct, DEFAULT_RISK.takeProfitPct)), // 0 = off
     maxPositionPct: Math.min(100, Math.max(1, num(bot.max_position_pct, DEFAULT_RISK.maxPositionPct))),
     minTradeUsd: DEFAULT_RISK.minTradeUsd,
     kellyMultiplier: Math.min(1, Math.max(0.05, num(bot.kelly_fraction, DEFAULT_RISK.kellyMultiplier))),

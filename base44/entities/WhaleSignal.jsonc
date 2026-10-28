@@ -1,0 +1,106 @@
+{
+  // Notable Polymarket fills found by the scheduled whaleScan function.
+  // Shared by every signed-in user (read), written only by the backend.
+  "name": "WhaleSignal",
+  "type": "object",
+  "properties": {
+    "trade_id": {
+      "type": "string",
+      "description": "Stable fill id: txHash:tokenId:side:size (dedupe key)"
+    },
+    "tx_hash": {
+      "type": "string"
+    },
+    "traded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the fill happened on chain"
+    },
+    "wallet": {
+      "type": "string",
+      "description": "Polymarket proxy wallet (lower-case 0x address)"
+    },
+    "trader_name": {
+      "type": "string"
+    },
+    "profile_image": {
+      "type": "string"
+    },
+    "side": {
+      "type": "string",
+      "enum": ["BUY", "SELL"]
+    },
+    "outcome": {
+      "type": "string"
+    },
+    "outcome_index": {
+      "type": "number"
+    },
+    "condition_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "event_slug": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "description": "App category from the market's Gamma tags (politics, sports, …, other)"
+    },
+    "price": {
+      "type": "number"
+    },
+    "size": {
+      "type": "number",
+      "description": "Shares"
+    },
+    "usd": {
+      "type": "number",
+      "description": "Notional: shares × price"
+    },
+    "kinds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["whale", "contrarian", "insider"]
+      },
+      "description": "Why the fill was stored"
+    },
+    "flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Insider flag ids (fresh_account, few_markets, concentrated, long_shot, big_size)"
+    },
+    "insider_score": {
+      "type": "number"
+    },
+    "suspicious": {
+      "type": "boolean"
+    },
+    "wallet_age_days": {
+      "type": "number"
+    },
+    "wallet_markets": {
+      "type": "number"
+    },
+    "wallet_pnl": {
+      "type": "number",
+      "description": "Wallet's all-time P&L at scan time"
+    },
+    "portfolio_value": {
+      "type": "number"
+    }
+  },
+  "required": ["trade_id", "wallet", "condition_id", "usd", "traded_at"],
+  "rls": {
+    "read": { "user_condition": { "id": "{{user.id}}" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

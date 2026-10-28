@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import BotDetailModal from './BotDetailModal';
-import { ALGORITHM_LABELS, FillModeBadge } from './LiveBots';
+import { ALGORITHM_LABELS, FillModeBadge, pilotNames } from './LiveBots';
 import { formatSignedUsd } from '@/api/polymarket';
 
 function runDuration(run) {
@@ -28,7 +28,7 @@ function RunRow({ run, onClick }) {
         {ALGORITHM_LABELS[run.algorithm] || run.algorithm}
       </Badge>
       <FillModeBadge bot={run} className="hidden sm:flex" />
-      <span className="text-xs text-muted-foreground flex-shrink-0 hidden lg:block">{run.categories?.join(', ') || '—'}</span>
+      <span className="text-xs text-muted-foreground flex-shrink-0 hidden lg:block max-w-[160px] truncate">{run.algorithm === 'copy' ? pilotNames(run) || '—' : run.categories?.join(', ') || '—'}</span>
       <span className="text-xs text-muted-foreground font-mono flex-shrink-0 hidden md:block">
         {run.start_time ? format(new Date(run.start_time), 'MMM d, HH:mm') : '—'}
       </span>
@@ -80,7 +80,7 @@ export default function CompletedRuns({ runs, trades }) {
           <span className="w-24 flex-shrink-0">Run</span>
           <span className="flex-shrink-0">Algorithm</span>
           <span className="flex-shrink-0 hidden sm:block">Mode</span>
-          <span className="flex-shrink-0 hidden lg:block">Categories</span>
+          <span className="flex-shrink-0 hidden lg:block">Follows</span>
           <span className="flex-shrink-0 hidden md:block">Start</span>
           <span className="flex-shrink-0">Duration</span>
           <span className="flex-shrink-0 hidden sm:block">Positions</span>

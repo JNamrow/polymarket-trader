@@ -11,9 +11,9 @@
  *     updateBot(id, data) → Promise<void>
  *   }
  */
-import { fetchUniverse, fetchQuotes, fetchBook, fetchMarketsByConditionIds } from './polymarketApi.js';
+import { fetchUniverse, fetchQuotes, fetchBook, fetchMarketsByConditionIds, fetchPositions } from './polymarketApi.js';
 import { getStrategy } from './strategies.js';
-import { runTick, ENGINE_VERSION } from './tick.js';
+import { runTick, ENGINE_VERSION, normalizePilots } from './tick.js';
 
 export { ENGINE_VERSION };
 
@@ -31,6 +31,7 @@ async function mapLimit(items, limit, fn) {
 }
 
 export async function executeTick({ bot, openTrades = [], api, now = Date.now() }) {
+  if (bot.algorithm === 'copy') return executeCopyTick({ bot, openTrades, api, now });
   const strategy = getStrategy(bot.algorithm);
   const stamp = new Date(now).toISOString();
 
@@ -83,21 +84,80 @@ export async function executeTick({ bot, openTrades = [], api, now = Date.now() 
   const quotes = await fetchQuotes([...heldTokens, ...candidateTokens]).catch(() => ({}));
 
   const plan = runTick({ bot, openTrades, universe, quotes, books, resolved, now });
+  await applyPlan(api, bot, plan);
+  return summarize(bot, plan, universe.markets.length);
+}
 
-  if (plan.opens.length) await api.createTrades(plan.opens);
+async function applyPlan(api, bot, plan) {
+  const created = [...plan.opens, ...(plan.sells || [])];
+  if (created.length) await api.createTrades(created);
   const updates = [...plan.closes, ...plan.marks];
   if (updates.length) await api.updateTrades(updates);
   await api.updateBot(bot.id, plan.botPatch);
+}
 
+function summarize(bot, plan, marketsScanned) {
   return {
     botId: bot.id,
     opens: plan.opens.length,
-    closes: plan.closes.length,
-    marketsScanned: universe.markets.length,
+    closes: plan.closes.length + (plan.sells?.length || 0),
+    marketsScanned,
     pnl: plan.botPatch.pnl,
     finished: plan.finished,
     log: plan.log,
   };
+}
+
+/**
+ * Copy bots do not scan a market universe. Each tick they read every pilot's
+ * open positions, price the markets they hold or the pilot just entered, and
+ * let runTick turn the position deltas into mirrored buys and sells.
+ */
+async function executeCopyTick({ bot, openTrades = [], api, now = Date.now() }) {
+  const stamp = new Date(now).toISOString();
+  const wallets = normalizePilots(bot.copy_wallets);
+  if (!wallets.length) {
+    await api.updateBot(bot.id, { last_tick_at: stamp, last_error: 'No wallet to copy', activity_log: [...(bot.activity_log || []), { t: stamp, type: 'error', msg: 'No wallet to copy — add one or stop the bot' }].slice(-150) });
+    return { botId: bot.id, error: 'No wallet to copy', opens: 0, closes: 0 };
+  }
+
+  const fetched = await mapLimit(wallets, 2, w => fetchPositions(w.address, { limit: 500 }));
+  const pilots = {};
+  wallets.forEach((w, i) => {
+    if (fetched[i]) pilots[w.address] = { positions: fetched[i] };
+  });
+  if (!Object.keys(pilots).length) {
+    const msg = 'Pilot positions unavailable (Data API error) — nothing changed';
+    await api.updateBot(bot.id, { last_tick_at: stamp, last_error: msg, activity_log: [...(bot.activity_log || []), { t: stamp, type: 'error', msg }].slice(-150) });
+    return { botId: bot.id, error: msg, opens: 0, closes: 0 };
+  }
+
+  // Markets to price: everything we hold plus anything a pilot holds that we do not yet.
+  const heldConditions = openTrades.map(t => t.market_id).filter(Boolean);
+  const heldTokens = openTrades.map(t => t.token_id).filter(Boolean);
+  const held = new Set(heldTokens);
+  const prevState = bot.copy_state && typeof bot.copy_state === 'object' ? bot.copy_state : {};
+  // Biggest live positions first: the first mirror tick can only open a limited number of lots anyway.
+  const wanted = [];
+  for (const w of wallets) {
+    const prevPos = prevState[w.address]?.positions || {};
+    const isFirst = !prevState[w.address] && (bot.copy_mode || 'mirror') === 'mirror';
+    for (const p of pilots[w.address]?.positions || []) {
+      if (!(Number(p.currentValue) > 0) || p.redeemable) continue;
+      const grew = (Number(p.size) || 0) > (Number(prevPos[p.tokenId]) || 0) * 1.001;
+      if (held.has(p.tokenId) || grew || isFirst) wanted.push(p);
+    }
+  }
+  wanted.sort((a, b) => b.currentValue - a.currentValue);
+  const pilotConditions = wanted.map(p => p.conditionId);
+  const pilotTokens = wanted.map(p => p.tokenId);
+  const conditionIds = [...new Set([...heldConditions, ...pilotConditions])].slice(0, 160);
+  const resolved = conditionIds.length ? await fetchMarketsByConditionIds(conditionIds).catch(() => ({})) : {};
+  const quotes = await fetchQuotes([...new Set([...heldTokens, ...pilotTokens])].slice(0, 320)).catch(() => ({}));
+
+  const plan = runTick({ bot, openTrades, universe: { markets: [], events: [] }, quotes, books: {}, resolved, pilots, now });
+  await applyPlan(api, bot, plan);
+  return summarize(bot, plan, plan.botPatch.markets_scanned);
 }
 
 /**

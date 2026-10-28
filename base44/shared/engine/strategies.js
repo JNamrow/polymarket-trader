@@ -299,6 +299,26 @@ const custom = {
   },
 };
 
+// ─── Copy trading ─────────────────────────────────────────────────────────────
+/**
+ * Mirrors one or more wallets ("pilots"). Entries and trims are planned in
+ * tick.js from the pilots' position deltas; the only exit rule here is "the
+ * pilot got out", which tick.js exposes as ctx.copyDeltas[tokenId].
+ */
+const copy = {
+  id: 'copy',
+  label: 'Copy trader',
+  needsBooks: false,
+  scan() {
+    return [];
+  },
+  exitReason(trade, mark, market, ctx) {
+    const d = ctx.copyDeltas?.[trade.token_id];
+    if (d && d.fraction >= 0.999) return `${d.pilotName} exited`;
+    return null;
+  },
+};
+
 export const STRATEGIES = {
   momentum,
   mean_reversion: meanReversion,
@@ -306,6 +326,7 @@ export const STRATEGIES = {
   market_making: marketMaking,
   arbitrage,
   custom,
+  copy,
 };
 
 export function getStrategy(id) {
@@ -314,6 +335,7 @@ export function getStrategy(id) {
 
 /**
  * Generic exits that apply to every strategy except arbitrage baskets.
+ * A stop or target of 0 is off (copy bots follow their pilot's exits by default).
  * The move must be at least two ticks (2¢) so the bid/ask spread on a cheap
  * contract cannot trigger a stop by itself.
  */
@@ -327,7 +349,7 @@ export function riskExitReason(trade, mark, risk) {
   const lossFloor = Math.max((entry * risk.stopLossPct) / 100, MIN_EXIT_MOVE);
   const gainFloor = Math.max((entry * risk.takeProfitPct) / 100, MIN_EXIT_MOVE);
   const pct = pnlPct(trade, mark);
-  if (move <= -lossFloor) return `stop loss (${pct.toFixed(1)}%)`;
-  if (move >= gainFloor) return `take profit (+${pct.toFixed(1)}%)`;
+  if (risk.stopLossPct > 0 && move <= -lossFloor) return `stop loss (${pct.toFixed(1)}%)`;
+  if (risk.takeProfitPct > 0 && move >= gainFloor) return `take profit (+${pct.toFixed(1)}%)`;
   return null;
 }

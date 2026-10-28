@@ -139,6 +139,14 @@
       "type": "string",
       "description": "Human-readable reason for the entry"
     },
+    "pilot_address": {
+      "type": "string",
+      "description": "Copy bots: the wallet this lot mirrors"
+    },
+    "outcome_label": {
+      "type": "string",
+      "description": "Outcome name as Polymarket shows it (team name, candidate, …)"
+    },
     "basket_id": {
       "type": "string",
       "description": "Groups the legs of an arbitrage basket"
