@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44, enableDemoMode, signIn } from '@/api/base44Client';
+import { base44, enableDemoMode, signIn, DEMO_ONLY, isSharedSandbox } from '@/api/base44Client';
 import { seedDemo } from '@/lib/demoSeed';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
@@ -18,10 +18,13 @@ export const AuthProvider = ({ children }) => {
   // Demo mode: a visitor without an account gets a sandbox in their own browser.
   const enterDemo = async () => {
     enableDemoMode();
-    try {
-      await seedDemo(base44);
-    } catch (err) {
-      console.warn('Demo seed skipped:', err?.message || err);
+    if (!isSharedSandbox()) {
+      // The shared sandbox is seeded by the server job; a private one is seeded here.
+      try {
+        await seedDemo(base44);
+      } catch (err) {
+        console.warn('Demo seed skipped:', err?.message || err);
+      }
     }
     setIsDemo(true);
     setUser(null);
@@ -36,6 +39,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAppState = async () => {
+    if (DEMO_ONLY) {
+      await enterDemo();
+      return;
+    }
     try {
       setIsLoadingPublicSettings(true);
       setAuthError(null);

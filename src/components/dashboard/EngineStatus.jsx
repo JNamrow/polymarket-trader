@@ -13,12 +13,13 @@ export default function EngineStatus({ engine, runningCount }) {
   const secs = engine.nextTickAt ? Math.max(0, Math.round((engine.nextTickAt - Date.now()) / 1000)) : null;
   let label = 'engine idle';
   if (engine.running) label = 'ticking…';
+  else if (engine.serverTicks) label = 'server ticks every 5 min';
   else if (runningCount > 0) label = secs != null ? `next tick ${secs}s` : 'engine ready';
 
   return (
     <div
       className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-secondary border border-border"
-      title={engine.error ? `Last tick error: ${engine.error}` : `Runs every ${Math.round(engine.intervalMs / 1000)}s while this page is open`}
+      title={engine.error ? `Last tick error: ${engine.error}` : engine.serverTicks ? 'A server job ticks the shared sandbox every 5 minutes' : `Runs every ${Math.round(engine.intervalMs / 1000)}s while this page is open`}
     >
       <span
         className={cn(

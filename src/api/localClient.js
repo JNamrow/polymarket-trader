@@ -108,7 +108,40 @@ function entity(name) {
   return api;
 }
 
-const notInDemo = what => () => Promise.reject(new Error(`${what} is off in the demo. Sign in for the full version.`));
+export const notInDemo = what => () => Promise.reject(new Error(`${what} is off in the demo. Run your own copy for the full version.`));
+
+/**
+ * Per-visitor settings (followed wallets, alert preferences) kept in this
+ * browser under their own key. The shared Supabase sandbox uses this so the
+ * portfolios are shared but preferences are not.
+ */
+export function createLocalSettings(key) {
+  let user = { ...emptyState().user };
+  try {
+    const raw = JSON.parse(localStorage.getItem(key));
+    if (raw && typeof raw === 'object') user = { ...user, ...raw };
+  } catch {
+    /* start with defaults */
+  }
+  const save = () => {
+    try {
+      localStorage.setItem(key, JSON.stringify(user));
+    } catch {
+      /* private mode or quota */
+    }
+  };
+  return {
+    me: () => later(copy(user)),
+    updateMe: data => {
+      user = { ...user, ...copy(data) };
+      save();
+      return later(copy(user));
+    },
+    isAuthenticated: () => later(true),
+    logout: () => {},
+    redirectToLogin: () => {},
+  };
+}
 
 export function createLocalClient() {
   return {

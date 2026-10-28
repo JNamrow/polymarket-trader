@@ -8,7 +8,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { base44, isSharedSandbox } from '@/api/base44Client';
 import { executeTick, liquidateBot } from '@/engine/engine.js';
 
 export const TICK_INTERVAL_MS = 60_000;
@@ -94,18 +94,20 @@ export function useBotEngine({ bots = [], trades = [], enabled = true, intervalM
     [api, intervalMs, refresh]
   );
 
-  // Regular ticks while mounted.
+  // Regular ticks while mounted. In the shared demo sandbox a server job ticks
+  // every 5 minutes, so browsers only tick on demand (launch, "tick now", stop).
+  const periodic = enabled && !isSharedSandbox();
   useEffect(() => {
-    if (!enabled) return undefined;
+    if (!periodic) return undefined;
     const id = setInterval(() => tick(), intervalMs);
     return () => clearInterval(id);
-  }, [enabled, intervalMs, tick]);
+  }, [periodic, intervalMs, tick]);
 
   // First tick as soon as running bots are known.
   const hasRunning = bots.some(b => b.status === 'running');
   useEffect(() => {
-    if (enabled && hasRunning && lastRunRef.current === 0) tick();
-  }, [enabled, hasRunning, tick]);
+    if (periodic && hasRunning && lastRunRef.current === 0) tick();
+  }, [periodic, hasRunning, tick]);
 
   const stopBot = useCallback(
     async bot => {
@@ -130,6 +132,7 @@ export function useBotEngine({ bots = [], trades = [], enabled = true, intervalM
   return {
     ...status,
     intervalMs,
+    serverTicks: !periodic,
     tickNow,
     stopBot,
   };

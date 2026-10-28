@@ -99,7 +99,7 @@ All of this is computed in `src/engine/wallets.js` from public data. Nothing is 
 | --- | --- |
 | Market, wallet and fill data (Gamma, CLOB, Data APIs) | live |
 | Paper trading and copy trading on real prices and books | live |
-| Scheduled server ticks (`botTick`) and whale scanner (`whaleScan`) | deploy with `npx base44 deploy` (see below) |
+| Scheduled server ticks and whale scanner | Base44: `botTick` + `whaleScan` (`npx base44 deploy`); demo: `demo-tick` + `demo-whales` Supabase Edge Functions on pg_cron |
 | Real wallet balances and positions | live, read-only |
 | Order placement | **not connected** |
 
@@ -161,7 +161,15 @@ base44/
   functions/botTick/        scheduled engine tick (entry.ts + function.jsonc)
   functions/whaleScan/      scheduled whale scanner
   shared/engine/            copy of src/engine for the backend (npm run engine:sync)
-scripts/sync-engine.mjs     copies and checks that mirror
+supabase/
+  migrations/               shared demo sandbox schema, guard rails, reset (generated from the entity files)
+  functions/demo-tick/      Edge Function: tick the shared sandbox every 5 minutes, seed it when empty
+  functions/demo-whales/    Edge Function: store notable whale fills
+  functions/_shared/engine  copy of src/engine for the Edge Functions (npm run engine:sync)
+  cron.sql                  pg_cron schedules (tick, whales, reset)
+scripts/sync-engine.mjs     copies and checks both engine mirrors
+scripts/gen-supabase-schema.mjs  entity files → Supabase migration
+vercel.json                 static build settings for the demo
 src/
   engine/                   the engine: polymarketApi, markets, strategies, sizing, tick, engine, wallets
   api/base44Client.js       Base44 SDK client
@@ -172,7 +180,8 @@ src/
   lib/useWhaleAlerts.js     live alerts + stored signals
   lib/useUserProfile.js     user settings + live wallet funds
   lib/wallet.js             read-only Polygon and browser-wallet helpers
-  api/localClient.js        browser-only client for demo mode
+  api/localClient.js        browser-only client for demo mode (private sandbox)
+  api/sandboxClient.js      Supabase-backed client for the shared demo sandbox
   lib/demoSeed.js           sample portfolios for a fresh demo sandbox
   pages/                    Dashboard, Settings
   components/layout/        side rail, demo banner
@@ -202,6 +211,23 @@ npx base44 dev        # local backend + Vite dev server
 `npm run build` builds the site. `npm run lint` runs ESLint and checks the engine mirror. `npm run engine:sync` refreshes the mirror after you edit `src/engine`.
 
 **Engine without the UI.** `src/engine` runs in Node or Deno. Import `executeTick` from `src/engine/engine.js` and pass an in-memory `api` adapter, or call `runTick` with your own `ctx`.
+
+## Deploy the free demo (Vercel + Supabase)
+
+The public demo needs no Base44. It is a static build on Vercel's free plan plus a small Supabase project (free plan) that holds one shared sandbox. Total cost: zero.
+
+**1. Supabase (the shared sandbox).**
+- Create a project at supabase.com. In the SQL editor, run `supabase/migrations/20261028000000_demo_sandbox.sql`. It creates the tables, the guard rails (20 portfolios max, paper money only) and the `demo_reset()` function. Regenerate it with `npm run supabase:schema` after changing an entity.
+- Deploy the two Edge Functions: `npx supabase login`, `npx supabase link --project-ref <ref>`, `npx supabase functions deploy demo-tick demo-whales --no-verify-jwt`. They run the same engine as the browser from `supabase/functions/_shared/engine`.
+- Run `supabase/cron.sql` in the SQL editor after filling in the two placeholders. It schedules the tick every 5 minutes, the whale scan every 5 minutes, and the reset every 2 hours. The tick seeds two sample portfolios whenever the sandbox is empty, so visitors never see a blank screen.
+
+**2. Vercel (the site).**
+- Import the repository (Add New → Project → GitHub). Vercel reads `vercel.json`: Vite, `npm run build`, output `dist`, all routes to `index.html`.
+- Set three environment variables: `VITE_APP_MODE=demo`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (Project Settings → API). Deploy. Every push to `main` redeploys.
+
+**What visitors get.** A dashboard with the shared portfolios, live whale tracking, and the wizard. They can start paper portfolios in the shared sandbox (capped at 20). Their followed wallets and alert settings stay in their own browser. There is no sign-in and no way to create an account. Without the two Supabase variables the demo still works: each visitor then gets a private sandbox in their own browser.
+
+**How it is wired.** `VITE_APP_MODE=demo` makes `src/api/base44Client.js` skip Base44 entirely and use `src/api/sandboxClient.js` (Supabase, anon key, row-level security: read, create and update only) or `src/api/localClient.js`. In the shared sandbox the browser does not run the one-minute engine loop; the `demo-tick` function does, every 5 minutes, and the dashboard refreshes every 30 seconds. The "tick now", launch and stop actions still run the engine in the browser so changes show up at once.
 
 ## Base44 and GitHub sync
 

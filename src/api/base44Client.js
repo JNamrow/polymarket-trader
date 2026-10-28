@@ -1,41 +1,68 @@
 /**
  * The app's data client.
  *
- * Signed-in users talk to Base44 (entities, auth, integrations, functions).
- * Anyone else gets demo mode: the same interface backed by the browser's own
- * storage (see localClient.js). AuthContext decides which one at startup,
- * before any page renders, so every `base44.*` call below just works.
+ * Three backends share one interface (entities, auth, integrations, functions):
+ *   • Base44 — the owner's full app (signed in).
+ *   • Shared Supabase sandbox — the public demo when VITE_SUPABASE_URL and
+ *     VITE_SUPABASE_ANON_KEY are set (see sandboxClient.js).
+ *   • Browser-local sandbox — the public demo without Supabase (localClient.js).
+ *
+ * A build with VITE_APP_MODE=demo never talks to Base44 at all. Otherwise
+ * AuthContext decides at startup: a signed-in owner gets Base44, anyone else
+ * gets demo mode.
  */
 import { createClient } from '@base44/sdk';
 import { appParams } from '@/lib/app-params';
 import { createLocalClient } from './localClient';
+import { createSandboxClient } from './sandboxClient';
 
-const { appId, token, functionsVersion, appBaseUrl } = appParams;
+const env = import.meta.env;
+export const DEMO_ONLY = env.VITE_APP_MODE === 'demo';
+const SUPABASE_URL = env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = env.VITE_SUPABASE_ANON_KEY;
 
-export const remoteClient = createClient({
-  appId,
-  token,
-  functionsVersion,
-  serverUrl: '',
-  requiresAuth: false,
-  appBaseUrl,
-});
+let demo = false;
+let shared = false;
+
+function createSandbox() {
+  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    shared = true;
+    return createSandboxClient({ url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY });
+  }
+  return createLocalClient();
+}
+
+export const remoteClient = DEMO_ONLY
+  ? null
+  : createClient({
+      appId: appParams.appId,
+      token: appParams.token,
+      functionsVersion: appParams.functionsVersion,
+      serverUrl: '',
+      requiresAuth: false,
+      appBaseUrl: appParams.appBaseUrl,
+    });
 
 let active = remoteClient;
-let demo = false;
+if (DEMO_ONLY) {
+  demo = true;
+  active = createSandbox();
+}
 
 export function enableDemoMode() {
   if (demo) return;
   demo = true;
-  active = createLocalClient();
+  active = createSandbox();
 }
 
-export function isDemoMode() {
-  return demo;
-}
+export const isDemoMode = () => demo;
 
-/** The owner's sign-in page (nothing in the demo links to it). */
+/** True when the demo data lives in the shared Supabase sandbox (server ticks, scheduled resets). */
+export const isSharedSandbox = () => shared;
+
+/** The owner's sign-in page. Nothing in the demo links to it, and demo-only builds have none. */
 export function signIn() {
+  if (DEMO_ONLY) return;
   window.location.assign('/login');
 }
 

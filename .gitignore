@@ -33,3 +33,9 @@ base44/.app.jsonc
 
 # local tooling
 .claude/
+
+# deploy targets
+.vercel
+.env.local
+supabase/.temp
+supabase/.branches
