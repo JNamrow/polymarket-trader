@@ -4,7 +4,7 @@ An open-source autopilot for [Polymarket](https://polymarket.com).
 
 Pick an amount. Pick a trader to copy, or a strategy to run. Start it. The app watches live Polymarket data every minute, copies the trader (or applies the strategy), prices every position, and closes positions when the trader sells or when your limits say so. Next to it, a whale tracker shows where big money and smart money is going, so you know who is worth copying.
 
-**Try it now: [chirpy-poly-trade-flow.base44.app](https://chirpy-poly-trade-flow.base44.app).** No sign-up. You get a sandbox with paper money and two sample portfolios running on live data. It lives in your browser and resets after two hours. The hosted copy is a demo only. To run the full version (saved data, server-side ticks), fork this repo and deploy it to your own Base44 app. See [Run it yourself](#run-it-yourself).
+**Try it now: [polymarket-trader-lac.vercel.app](https://polymarket-trader-lac.vercel.app).** No sign-up. Everyone shares one sandbox with paper money and two sample portfolios running on live data. A server ticks them every 5 minutes, and the sandbox resets every two hours. The hosted copy is a demo only. To run your own (private data, your own schedule), fork this repo. See [Run it yourself](#run-it-yourself) and [Deploy the free demo](#deploy-the-free-demo-vercel--supabase).
 
 Right now the app **paper trades on real market data**. It reads real prices, order books, positions and wallets. It does not sign or send orders. "Live" portfolios track your real amount with simulated fills until a signer is connected (see [Live execution](#live-execution-status)).
 
