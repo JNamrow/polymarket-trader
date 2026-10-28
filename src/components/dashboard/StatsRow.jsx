@@ -2,6 +2,7 @@ import React from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Activity, Wallet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatUsd, formatSignedUsd } from '@/api/polymarket';
+import { demoFunds } from '@/engine/demo.js';
 
 function StatCard({ label, value, subValue, icon: Icon, trend }) {
   const isPositive = trend === 'up';
@@ -33,7 +34,7 @@ function StatCard({ label, value, subValue, icon: Icon, trend }) {
   );
 }
 
-export default function StatsRow({ botRuns }) {
+export default function StatsRow({ botRuns, demo = false }) {
   const finished = botRuns.filter(r => r.status === 'completed' || r.status === 'stopped');
   const active = botRuns.filter(r => r.status === 'running' || r.status === 'paused');
 
@@ -45,6 +46,7 @@ export default function StatsRow({ botRuns }) {
   const deployedPaper = active.filter(r => r.is_paper).reduce((sum, r) => sum + (Number(r.fund_allocation) || 0), 0);
   const totalReturned = finished.reduce((sum, r) => sum + (Number(r.fund_allocation) || 0) + (Number(r.pnl) || 0), 0);
   const unrealized = active.reduce((sum, r) => sum + (Number(r.unrealized_pnl) || 0), 0);
+  const funds = demo ? demoFunds(botRuns) : null;
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
@@ -57,14 +59,14 @@ export default function StatsRow({ botRuns }) {
       />
       <StatCard
         label="Portfolio Value"
-        value={formatUsd(currentValue)}
-        subValue={`${active.length} active bot${active.length !== 1 ? 's' : ''} · ${formatSignedUsd(unrealized)} unrealized`}
+        value={formatUsd(demo ? funds.totalFunds : currentValue)}
+        subValue={demo ? `${formatUsd(funds.available)} available to trade` : `${active.length} active bot${active.length !== 1 ? 's' : ''} · ${formatSignedUsd(unrealized)} unrealized`}
         icon={Activity}
       />
       <StatCard
         label="Funds Deployed"
-        value={formatUsd(deployedLive)}
-        subValue={deployedPaper > 0 ? `+ ${formatUsd(deployedPaper)} in paper experiments` : 'Allocated to live bots'}
+        value={formatUsd(demo ? funds.deployed : deployedLive)}
+        subValue={demo ? `in ${active.length} running portfolio${active.length !== 1 ? 's' : ''} · ${formatSignedUsd(unrealized)} unrealized` : deployedPaper > 0 ? `+ ${formatUsd(deployedPaper)} in paper experiments` : 'Allocated to live bots'}
         icon={DollarSign}
       />
       <StatCard

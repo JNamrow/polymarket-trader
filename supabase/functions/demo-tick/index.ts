@@ -1,16 +1,16 @@
 // @ts-nocheck — the shared engine is plain JavaScript.
 /**
  * demo-tick — advances every running portfolio in the shared demo sandbox by
- * one engine tick, and seeds the sample portfolios when the sandbox is empty
- * (right after a reset). Same engine as the browser: ../_shared/engine.
+ * one engine tick, and seeds the sample portfolios plus the sample history
+ * when the sandbox is empty (right after a reset). Same engine as the browser: ../_shared/engine.
  *
  * Called every 5 minutes by pg_cron (see supabase/cron.sql) with the cron token
  * as a bearer token. Anything else gets 401. Deploy with verify_jwt off.
  */
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { executeTick } from "./engine/engine.js";
-import { fetchLeaderboard } from "./engine/polymarketApi.js";
-import { buildSampleBots } from "./engine/demo.js";
+import { fetchLeaderboard, fetchPortfolioValue } from "./engine/polymarketApi.js";
+import { buildSampleBots, buildSampleHistory, pickSamplePilot } from "./engine/demo.js";
 
 const MIN_GAP_MS = 4 * 60 * 1000;
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
@@ -42,13 +42,14 @@ Deno.serve(async (req: Request) => {
       if (!count) {
         let pilot = null;
         try {
-          const board = await fetchLeaderboard({ window: "1m", limit: 5, orderBy: "PNL" });
-          pilot = board.find((w) => w.name) || board[0] || null;
+          const board = await fetchLeaderboard({ window: "1m", limit: 25, orderBy: "PNL" });
+          pilot = await pickSamplePilot(board, fetchPortfolioValue);
         } catch (_err) {
           /* leaderboard unavailable: seed the strategy bot only */
         }
-        bots = must(await sb.from("bot_runs").insert(buildSampleBots({ pilot })).select());
-        seeded = bots.length;
+        const inserted = must(await sb.from("bot_runs").insert([...buildSampleBots({ pilot }), ...buildSampleHistory({ pilot })]).select());
+        seeded = inserted.length;
+        bots = inserted.filter((b) => b.status === "running");
       }
     }
 

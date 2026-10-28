@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { base44, isDemoMode } from '@/api/base44Client';
+import { DEMO_BANKROLL, demoFunds } from '@/engine/demo.js';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import StatsRow from '../components/dashboard/StatsRow';
@@ -49,7 +50,8 @@ export default function Dashboard() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['botRuns'] }),
   });
 
-  const [activeTab, setActiveTab] = useState('bots');
+  const demo = isDemoMode();
+  const [activeTab, setActiveTab] = useState(demo ? 'whales' : 'bots'); // the demo opens on the whale tracker
   const [launch, setLaunch] = useState(null); // { mode: 'paper' | 'live', pilot? } | null
   // The view's sections stagger in on first load only; later updates render in place.
   const [entered, setEntered] = useState(false);
@@ -65,8 +67,10 @@ export default function Dashboard() {
   const deployedLive = liveBots.filter(b => !b.is_paper).reduce((sum, b) => sum + (b.fund_allocation || 0), 0);
 
   const walletCash = walletFunds.data?.cash ?? (user?.wallet_balance != null && user.wallet_balance !== '' ? Number(user.wallet_balance) : null);
-  const availableFunds = walletCash != null ? Math.max(0, walletCash - deployedLive) : null;
-  const fundsSource = walletFunds.data ? 'live USDC balance of your Polymarket wallet' : walletCash != null ? 'manual balance from Settings' : null;
+  // The demo has one shared paper account: a fixed bankroll, part of it tied up in the running portfolios.
+  const funds = demo ? demoFunds(botRuns) : null;
+  const availableFunds = demo ? funds.available : walletCash != null ? Math.max(0, walletCash - deployedLive) : null;
+  const fundsSource = demo ? `the demo account's ${formatUsd(DEMO_BANKROLL)} of paper money` : walletFunds.data ? 'live USDC balance of your Polymarket wallet' : walletCash != null ? 'manual balance from Settings' : null;
 
   const handlePause = bot => updateMutation.mutate({ id: bot.id, data: { status: 'paused' } });
   const handleResume = bot => updateMutation.mutate({ id: bot.id, data: { status: 'running' } });
@@ -123,8 +127,8 @@ export default function Dashboard() {
           )}
           {activeTab === 'bots' && <EngineStatus engine={engine} runningCount={runningCount} />}
         </div>
-        {activeTab === 'bots' && (
-          <div className="flex gap-2 flex-shrink-0">
+        <div className="flex gap-2 flex-shrink-0">
+          {!demo && (
             <Button
               onClick={() => setLaunch({ mode: 'paper' })}
               variant="outline"
@@ -134,16 +138,16 @@ export default function Dashboard() {
               <FlaskConical className="w-3.5 h-3.5" />
               <span className="hidden sm:inline ml-1.5">Experiment</span>
             </Button>
-            <Button
-              onClick={() => setLaunch({ mode: 'live' })}
+          )}
+          <Button
+            onClick={() => setLaunch({ mode: demo ? 'paper' : 'live' })}
               size="sm"
               className="h-8 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg px-2.5"
             >
               <Rocket className="w-3.5 h-3.5" />
               <span className="hidden sm:inline ml-1.5">Start portfolio</span>
             </Button>
-          </div>
-        )}
+        </div>
       </div>
 
       <BotLaunchModal
@@ -158,7 +162,7 @@ export default function Dashboard() {
 
       {activeTab === 'bots' && (
         <>
-          <StatsRow botRuns={botRuns} />
+          <StatsRow botRuns={botRuns} demo={demo} />
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-5">
             <div className="lg:col-span-3">
               <PnlChart botRuns={botRuns} />

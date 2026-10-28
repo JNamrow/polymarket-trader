@@ -49,9 +49,10 @@ async function authorized(req: Request, sb, serviceKey: string) {
   return !!data?.value && data.value === bearer;
 }
 
-async function selectIn(sb, table, column, values, columns = "*") {
+/** Rows whose `column` is in `values`. Small chunks: the list travels in the URL, and the gateway rejects very long ones. */
+async function selectIn(sb, table, column, values, columns = "*", size = 60) {
   const out = [];
-  for (const part of chunk(values, 300)) out.push(...must(await sb.from(table).select(columns).in(column, part)));
+  for (const part of chunk(values, size)) out.push(...must(await sb.from(table).select(columns).in(column, part)));
   return out;
 }
 
@@ -145,7 +146,8 @@ Deno.serve(async (req: Request) => {
     const trades = [...byId.values()];
 
     // 2. Drop fills already credited.
-    const seen = new Set((await selectIn(sb, "wallet_fills_seen", "trade_id", trades.map((t) => t.id), "trade_id")).map((r) => r.trade_id));
+    // Trade ids are long (tx hash + token id), so they go in a POST body through an RPC instead of a URL.
+    const seen = new Set(must(await sb.rpc("seen_fill_ids", { ids: trades.map((t) => t.id) })));
     const fresh = trades.filter((t) => !seen.has(t.id));
 
     // 3. Market categories: cached in market_tags, looked up from Gamma once per market.
@@ -167,7 +169,7 @@ Deno.serve(async (req: Request) => {
       if (!freshByWallet.has(t.wallet)) freshByWallet.set(t.wallet, []);
       freshByWallet.get(t.wallet).push(t);
     }
-    const existing = new Map((await selectIn(sb, "wallets", "address", [...freshByWallet.keys()])).map((r) => [r.address, r]));
+    const existing = new Map((await selectIn(sb, "wallets", "address", [...freshByWallet.keys()], "*", 100)).map((r) => [r.address, r]));
     const newAddresses = [...freshByWallet.keys()]
       .filter((a) => !existing.has(a))
       .sort((a, b) => freshByWallet.get(b).reduce((s, t) => s + t.usd, 0) - freshByWallet.get(a).reduce((s, t) => s + t.usd, 0));

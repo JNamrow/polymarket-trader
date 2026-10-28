@@ -117,3 +117,10 @@ create policy "scan state read" on public.wallet_scan_state for select to anon, 
 
 grant select on public.wallets, public.market_tags, public.wallet_scan_state to anon, authenticated;
 revoke all on public.wallet_fills_seen from public, anon, authenticated;
+
+-- ─── Which of these fills are already counted (ids go in a POST body, not a URL) ──
+create or replace function public.seen_fill_ids(ids text[]) returns setof text language sql stable security definer set search_path = public as $$
+  select trade_id from public.wallet_fills_seen where trade_id = any(ids)
+$$;
+revoke all on function public.seen_fill_ids(text[]) from public, anon, authenticated;
+grant execute on function public.seen_fill_ids(text[]) to service_role;

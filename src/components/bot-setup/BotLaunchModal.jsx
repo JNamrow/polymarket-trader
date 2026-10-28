@@ -6,7 +6,7 @@
  * The record it creates is a BotRun; the engine takes it from there.
  */
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { base44, isDemoMode } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DollarSign, Rocket, Wallet, FlaskConical, AlertTriangle, Users, Cpu, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -62,7 +62,8 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
   const queryClient = useQueryClient();
 
   const [step, setStep] = useState(1);
-  const [isPaper, setIsPaper] = useState(mode === 'paper');
+  const demo = isDemoMode(); // the demo is paper only: no money choice, one shared paper account
+  const [isPaper, setIsPaper] = useState(demo || mode === 'paper');
   const [fund, setFund] = useState(100);
   const [kind, setKind] = useState('copy'); // 'copy' | 'strategy'
   const [pilots, setPilots] = useState([]);
@@ -90,8 +91,8 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
   useEffect(() => {
     if (!open) return;
     setStep(1);
-    setIsPaper(mode === 'paper');
-    setFund(defaults.fund > 0 ? Number(defaults.fund) : 100);
+    setIsPaper(demo || mode === 'paper');
+    setFund(defaults.fund > 0 ? Number(defaults.fund) : demo ? 250 : 100);
     setAlgorithm(defaults.algorithm || 'momentum');
     setCategories(['all']);
     setBotName('');
@@ -112,7 +113,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
       setKind('copy');
       setPilots([]);
     }
-  }, [open, mode, defaults.fund, defaults.algorithm, preset]);
+  }, [open, mode, demo, defaults.fund, defaults.algorithm, preset]);
 
   const createMutation = useMutation({
     mutationFn: data => base44.entities.BotRun.create(data),
@@ -131,7 +132,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
   const validate = s => {
     if (s === 1) {
       if (!(fund > 0)) return 'Enter an amount';
-      if (!isPaper && availableFunds != null && fund > availableFunds) return `Only ${formatUsd(availableFunds)} available`;
+      if ((!isPaper || demo) && availableFunds != null && fund > availableFunds) return `Only ${formatUsd(availableFunds)} available`;
     }
     if (s === 2) {
       if (isCopy && pilots.length === 0) return 'Pick at least one trader to copy';
@@ -226,7 +227,8 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
     });
   };
 
-  const accent = isPaper ? 'violet' : 'primary';
+  const paperLook = isPaper && !demo; // the demo keeps the primary look: everything in it is paper anyway
+  const accent = paperLook ? 'violet' : 'primary';
   const summary = isCopy
     ? `${formatUsd(fund, { compact: true })}${isPaper ? ' paper' : ''} · copying ${pilotNames.join(', ') || '—'} · ${copyMode === 'mirror' ? 'mirror now' : 'new moves only'} · ${untilStopped ? 'until stopped' : `${duration}h`}`
     : `${formatUsd(fund, { compact: true })}${isPaper ? ' paper' : ''} · ${ALGORITHM_LABELS[algorithm] || algorithm} · ${categories.join(', ')} · ${duration}h`;
@@ -236,11 +238,11 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
       <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto overscroll-contain bg-card border-border p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', isPaper ? 'bg-violet-500/10' : 'bg-primary/10')}>
-              {isPaper ? <FlaskConical className="w-4 h-4 text-violet-400" /> : <Rocket className="w-4 h-4 text-primary" />}
+            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', paperLook ? 'bg-violet-500/10' : 'bg-primary/10')}>
+              {paperLook ? <FlaskConical className="w-4 h-4 text-violet-400" /> : <Rocket className="w-4 h-4 text-primary" />}
             </div>
             <div className="min-w-0">
-              <DialogTitle className="text-base font-semibold text-foreground">{isPaper ? 'New paper portfolio' : 'Start a portfolio'}</DialogTitle>
+              <DialogTitle className="text-base font-semibold text-foreground">{paperLook ? 'New paper portfolio' : 'Start a portfolio'}</DialogTitle>
               <p className="text-xs text-muted-foreground mt-0.5">Choose an amount, pick a trader to copy or a strategy to run, and set it running.</p>
             </div>
             <ol className="ml-auto hidden sm:flex items-center gap-1 text-[11px]">
@@ -266,6 +268,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
         <div className="px-6 py-5 space-y-6">
           {step === 1 && (
             <>
+              {!demo && (
               <Field label="Money">
                 <div className="grid grid-cols-2 gap-2">
                   {[
@@ -289,6 +292,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                   })}
                 </div>
               </Field>
+              )}
 
               {!isPaper && (
                 <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
@@ -299,27 +303,27 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                 </div>
               )}
 
-              <Field label={isPaper ? 'Amount (simulated USDC)' : 'Amount to allocate (USDC)'}>
+              <Field label={demo ? 'Amount (paper USDC)' : isPaper ? 'Amount (simulated USDC)' : 'Amount to allocate (USDC)'}>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input type="number" min={1} value={fund} onChange={e => setFund(Number(e.target.value))} className="pl-8 bg-background border-border font-mono text-lg h-12" />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">USDC{isPaper ? ' (sim)' : ''}</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">USDC{paperLook ? ' (sim)' : ''}</span>
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  {[50, 100, 250, 500, 1000].map(amt => (
+                  {(demo ? [100, 250, 500, 1000, 2500] : [50, 100, 250, 500, 1000]).map(amt => (
                     <button
                       key={amt}
                       type="button"
                       onClick={() => setFund(amt)}
                       className={cn(
                         'pressable px-3 py-1 rounded-md text-xs font-mono border',
-                        fund === amt ? (isPaper ? 'border-violet-500/50 bg-violet-500/10 text-violet-400' : 'border-primary/50 bg-primary/10 text-primary') : 'border-border bg-background text-muted-foreground hover:text-foreground'
+                        fund === amt ? (paperLook ? 'border-violet-500/50 bg-violet-500/10 text-violet-400' : 'border-primary/50 bg-primary/10 text-primary') : 'border-border bg-background text-muted-foreground hover:text-foreground'
                       )}
                     >
                       ${amt}
                     </button>
                   ))}
-                  {!isPaper && availableFunds != null && (
+                  {(!isPaper || demo) && availableFunds != null && (
                     <button type="button" onClick={() => setFund(Math.floor(availableFunds))} className="px-3 py-1 rounded-md text-xs font-mono border border-border bg-background text-muted-foreground hover:text-foreground">
                       max {formatUsd(availableFunds, { compact: true })}
                     </button>
@@ -327,12 +331,12 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                 </div>
               </Field>
 
-              {!isPaper && (
+              {(!isPaper || demo) && (
                 <div className="bg-secondary/50 border border-border rounded-xl p-3 flex items-center justify-between text-xs">
                   <span className="text-muted-foreground flex items-center gap-2">
                     <Wallet className="w-3.5 h-3.5" /> Available balance
                   </span>
-                  <span className="font-mono text-foreground">{availableFunds != null ? formatUsd(availableFunds) : 'add your wallet address in Settings'}</span>
+                  <span className="font-mono text-foreground">{availableFunds != null ? `${formatUsd(availableFunds)}${demo ? ' of paper money' : ''}` : 'add your wallet address in Settings'}</span>
                 </div>
               )}
             </>
@@ -373,7 +377,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
 
           {step === 3 && (
             <>
-              <div className={cn('rounded-xl border p-3 text-xs', isPaper ? 'border-violet-500/30 bg-violet-500/5 text-violet-200' : 'border-primary/30 bg-primary/5 text-foreground')}>{summary}</div>
+              <div className={cn('rounded-xl border p-3 text-xs', paperLook ? 'border-violet-500/30 bg-violet-500/5 text-violet-200' : 'border-primary/30 bg-primary/5 text-foreground')}>{summary}</div>
 
               <Field label="Name (optional)">
                 <Input value={botName} onChange={e => setBotName(e.target.value)} placeholder={isCopy ? `copy-${(pilotNames[0] || 'trader').toLowerCase()}` : 'e.g. momentum-alpha'} className="bg-background border-border font-mono text-sm" />
@@ -504,7 +508,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  {isPaper ? <FlaskConical className="w-4 h-4 mr-2" /> : <Rocket className="w-4 h-4 mr-2" />}
+                  {paperLook ? <FlaskConical className="w-4 h-4 mr-2" /> : <Rocket className="w-4 h-4 mr-2" />}
                   {isCopy ? `Start copying — ${formatUsd(fund, { compact: true })}` : `Launch — ${formatUsd(fund, { compact: true })}`}
                   {isPaper ? ' (paper)' : ''}
                 </>
