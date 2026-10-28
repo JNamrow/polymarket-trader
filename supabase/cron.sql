@@ -1,25 +1,31 @@
--- Schedules for the shared demo sandbox. Run this once in the Supabase SQL editor
--- AFTER the migration and AFTER deploying the Edge Functions.
+-- Schedules for the shared demo sandbox. Run once in the Supabase SQL editor AFTER the
+-- migration and AFTER deploying the Edge Functions (with JWT verification off).
 --
--- Replace the two placeholders:
---   <PROJECT_REF>        your project ref (the part before .supabase.co)
---   <SERVICE_ROLE_KEY>   Project Settings → API → service_role (keep it secret)
--- They are stored in Supabase Vault, not in the cron job text.
+-- Replace <PROJECT_REF> with your project ref (the part before .supabase.co). No keys
+-- to paste: a random token is generated here, stored in Vault for pg_cron and in
+-- public.demo_secrets for the functions, which accept it as a bearer token.
 
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
 
-select vault.create_secret('https://<PROJECT_REF>.supabase.co/functions/v1', 'demo_functions_url');
-select vault.create_secret('<SERVICE_ROLE_KEY>', 'demo_service_key');
+do $$
+declare token text := encode(gen_random_bytes(24), 'hex');
+begin
+  insert into public.demo_secrets (name, value) values ('cron_token', token)
+    on conflict (name) do update set value = excluded.value;
+  delete from vault.secrets where name in ('demo_cron_token', 'demo_functions_url');
+  perform vault.create_secret(token, 'demo_cron_token');
+  perform vault.create_secret('https://<PROJECT_REF>.supabase.co/functions/v1', 'demo_functions_url');
+end $$;
 
 create or replace function public.invoke_demo_function(fn text) returns bigint language plpgsql security definer set search_path = public as $$
-declare base_url text; key text;
+declare base_url text; token text;
 begin
   select decrypted_secret into base_url from vault.decrypted_secrets where name = 'demo_functions_url';
-  select decrypted_secret into key from vault.decrypted_secrets where name = 'demo_service_key';
+  select decrypted_secret into token from vault.decrypted_secrets where name = 'demo_cron_token';
   return net.http_post(
     url := base_url || '/' || fn,
-    headers := jsonb_build_object('Content-Type', 'application/json', 'Authorization', 'Bearer ' || key),
+    headers := jsonb_build_object('Content-Type', 'application/json', 'Authorization', 'Bearer ' || token),
     body := '{}'::jsonb,
     timeout_milliseconds := 120000
   );

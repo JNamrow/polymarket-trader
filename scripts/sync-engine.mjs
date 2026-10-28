@@ -3,8 +3,9 @@
  * The trading engine lives in src/engine (the frontend imports it from there,
  * which is the only tree Base44's preview sandbox serves). Server code can
  * only import from its own tree, so exact copies are kept at:
- *   base44/shared/engine               for base44/functions/*  (Base44, Deno)
- *   supabase/functions/_shared/engine  for supabase/functions/* (Supabase Edge Functions, Deno)
+ *   base44/shared/engine                 for base44/functions/*  (Base44, Deno)
+ *   supabase/functions/demo-tick/engine  and
+ *   supabase/functions/demo-whales/engine (Supabase Edge Functions, Deno; each deploy uploads one folder)
  *
  *   node scripts/sync-engine.mjs          copy src/engine → both mirrors
  *   node scripts/sync-engine.mjs --check  exit 1 if a mirror differs
@@ -15,7 +16,11 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(root, 'src', 'engine');
-const DESTS = [join(root, 'base44', 'shared', 'engine'), join(root, 'supabase', 'functions', '_shared', 'engine')];
+const DESTS = [
+  join(root, 'base44', 'shared', 'engine'),
+  join(root, 'supabase', 'functions', 'demo-tick', 'engine'),
+  join(root, 'supabase', 'functions', 'demo-whales', 'engine'),
+];
 const check = process.argv.includes('--check');
 
 const files = readdirSync(SRC).filter(f => f.endsWith('.js')).sort();

@@ -160,6 +160,14 @@ create table if not exists public.demo_meta (
 );
 insert into public.demo_meta (id) values (1) on conflict (id) do nothing;
 
+-- ─── Secrets the Edge Functions read with the service role; nobody else can ──
+create table if not exists public.demo_secrets (
+  name text primary key,
+  value text not null
+);
+alter table public.demo_secrets enable row level security;
+revoke all on public.demo_secrets from public, anon, authenticated;
+
 -- ─── Guard rails for a public sandbox ───────────────────────────────────────
 -- Anyone can start a paper portfolio. Keep it small: 20 active portfolios at a time,
 -- paper amounts between $1 and $10,000, short names.

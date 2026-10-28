@@ -4,12 +4,12 @@
  * crowd, suspicious fresh accounts) in whale_signals for the shared demo, and
  * drops rows older than two days. Same rules as the browser: _shared/engine/wallets.js.
  *
- * Called every 5 minutes by pg_cron (see supabase/cron.sql) with the service
- * role key as a bearer token.
+ * Called every 5 minutes by pg_cron (see supabase/cron.sql) with the cron token
+ * as a bearer token. Deploy with verify_jwt off.
  */
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
-import { fetchWhaleTrades, fetchUserStats, fetchPortfolioValue, fetchMarketTags, mapLimit } from "../_shared/engine/polymarketApi.js";
-import { insiderSignals, isContrarian, categoryFromTags, ageDays } from "../_shared/engine/wallets.js";
+import { fetchWhaleTrades, fetchUserStats, fetchPortfolioValue, fetchMarketTags, mapLimit } from "./engine/polymarketApi.js";
+import { insiderSignals, isContrarian, categoryFromTags, ageDays } from "./engine/wallets.js";
 
 const MIN_USD = 10_000;
 const WHALE_USD = 100_000;
@@ -17,10 +17,20 @@ const MAX_NEW = 60;
 const KEEP_DAYS = 2;
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
 
+
+/** pg_cron calls with the token in demo_secrets (set by supabase/cron.sql); humans may use the service role key. */
+async function authorized(req: Request, sb, serviceKey: string) {
+  const bearer = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  if (!bearer) return false;
+  if (bearer === serviceKey) return true;
+  const { data } = await sb.from("demo_secrets").select("value").eq("name", "cron_token").maybeSingle();
+  return !!data?.value && data.value === bearer;
+}
+
 Deno.serve(async (req: Request) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-  if (!serviceKey || req.headers.get("Authorization") !== `Bearer ${serviceKey}`) return json({ error: "unauthorized" }, 401);
   const sb = createClient(Deno.env.get("SUPABASE_URL") || "", serviceKey, { auth: { persistSession: false } });
+  if (!serviceKey || !(await authorized(req, sb, serviceKey))) return json({ error: "unauthorized" }, 401);
 
   try {
     const trades = await fetchWhaleTrades({ minUsd: MIN_USD, limit: 200 });

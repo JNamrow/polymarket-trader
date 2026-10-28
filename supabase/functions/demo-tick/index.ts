@@ -4,13 +4,13 @@
  * one engine tick, and seeds the sample portfolios when the sandbox is empty
  * (right after a reset). Same engine as the browser: ../_shared/engine.
  *
- * Called every 5 minutes by pg_cron (see supabase/cron.sql) with the service
- * role key as a bearer token. Anything else gets 401.
+ * Called every 5 minutes by pg_cron (see supabase/cron.sql) with the cron token
+ * as a bearer token. Anything else gets 401. Deploy with verify_jwt off.
  */
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
-import { executeTick } from "../_shared/engine/engine.js";
-import { fetchLeaderboard } from "../_shared/engine/polymarketApi.js";
-import { buildSampleBots } from "../_shared/engine/demo.js";
+import { executeTick } from "./engine/engine.js";
+import { fetchLeaderboard } from "./engine/polymarketApi.js";
+import { buildSampleBots } from "./engine/demo.js";
 
 const MIN_GAP_MS = 4 * 60 * 1000;
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
@@ -19,10 +19,20 @@ const must = ({ data, error }) => {
   return data;
 };
 
+
+/** pg_cron calls with the token in demo_secrets (set by supabase/cron.sql); humans may use the service role key. */
+async function authorized(req: Request, sb, serviceKey: string) {
+  const bearer = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  if (!bearer) return false;
+  if (bearer === serviceKey) return true;
+  const { data } = await sb.from("demo_secrets").select("value").eq("name", "cron_token").maybeSingle();
+  return !!data?.value && data.value === bearer;
+}
+
 Deno.serve(async (req: Request) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-  if (!serviceKey || req.headers.get("Authorization") !== `Bearer ${serviceKey}`) return json({ error: "unauthorized" }, 401);
   const sb = createClient(Deno.env.get("SUPABASE_URL") || "", serviceKey, { auth: { persistSession: false } });
+  if (!serviceKey || !(await authorized(req, sb, serviceKey))) return json({ error: "unauthorized" }, 401);
 
   try {
     let bots = must(await sb.from("bot_runs").select("*").eq("status", "running").order("created_date"));

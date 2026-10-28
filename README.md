@@ -165,7 +165,7 @@ supabase/
   migrations/               shared demo sandbox schema, guard rails, reset (generated from the entity files)
   functions/demo-tick/      Edge Function: tick the shared sandbox every 5 minutes, seed it when empty
   functions/demo-whales/    Edge Function: store notable whale fills
-  functions/_shared/engine  copy of src/engine for the Edge Functions (npm run engine:sync)
+  functions/*/engine/       copies of src/engine for the Edge Functions (npm run engine:sync)
   cron.sql                  pg_cron schedules (tick, whales, reset)
 scripts/sync-engine.mjs     copies and checks both engine mirrors
 scripts/gen-supabase-schema.mjs  entity files → Supabase migration
@@ -218,8 +218,8 @@ The public demo needs no Base44. It is a static build on Vercel's free plan plus
 
 **1. Supabase (the shared sandbox).**
 - Create a project at supabase.com. In the SQL editor, run `supabase/migrations/20261028000000_demo_sandbox.sql`. It creates the tables, the guard rails (20 portfolios max, paper money only) and the `demo_reset()` function. Regenerate it with `npm run supabase:schema` after changing an entity.
-- Deploy the two Edge Functions: `npx supabase login`, `npx supabase link --project-ref <ref>`, `npx supabase functions deploy demo-tick demo-whales --no-verify-jwt`. They run the same engine as the browser from `supabase/functions/_shared/engine`.
-- Run `supabase/cron.sql` in the SQL editor after filling in the two placeholders. It schedules the tick every 5 minutes, the whale scan every 5 minutes, and the reset every 2 hours. The tick seeds two sample portfolios whenever the sandbox is empty, so visitors never see a blank screen.
+- Deploy the two Edge Functions: `npx supabase login`, `npx supabase link --project-ref <ref>`, `npx supabase functions deploy demo-tick demo-whales --no-verify-jwt`. Each function folder carries its own copy of the engine (kept in sync by `npm run engine:sync`).
+- Run `supabase/cron.sql` in the SQL editor after replacing `<PROJECT_REF>`. It generates a random token (kept in Vault and in a server-only table; nothing to paste), then schedules the tick every 5 minutes, the whale scan every 5 minutes, and the reset every 2 hours. The tick seeds two sample portfolios whenever the sandbox is empty, so visitors never see a blank screen.
 
 **2. Vercel (the site).**
 - Import the repository (Add New → Project → GitHub). Vercel reads `vercel.json`: Vite, `npm run build`, output `dist`, all routes to `index.html`.
