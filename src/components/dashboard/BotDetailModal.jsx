@@ -7,7 +7,7 @@ import { Clock, TrendingUp, TrendingDown, Terminal, Sparkles, ExternalLink, Refr
 import { cn } from '@/lib/utils';
 import { formatDistanceToNowStrict, format } from 'date-fns';
 import { toast } from 'sonner';
-import { base44 } from '@/api/base44Client';
+import { base44, isDemoMode } from '@/api/base44Client';
 import { ALGORITHM_LABELS, FillModeBadge } from './LiveBots';
 import { formatSignedUsd, formatCents } from '@/api/polymarket';
 
@@ -178,6 +178,15 @@ In under 150 words and plain language: 1) what the bot is currently exposed to, 
       setLoading(false);
     }
   };
+
+  if (isDemoMode()) {
+    return (
+      <div className="space-y-1">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">AI Brief</p>
+        <p className="text-[11px] text-muted-foreground/70">Off in the demo because it spends LLM credits. The full version asks Base44's LLM to sum up exposure and risk from the positions above.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">

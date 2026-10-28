@@ -58,7 +58,7 @@ function PilotPreview({ pilot, budget, isPaper }) {
         <span className="text-foreground font-medium truncate">{pilot.name || pilot.address.slice(0, 10)}</span>
         {stats.data && (
           <span className="ml-auto text-muted-foreground">
-            all-time <Pnl value={stats.data.totalPnl} />
+            all-time <Pnl value={stats.data.tradePnl} />
           </span>
         )}
       </div>

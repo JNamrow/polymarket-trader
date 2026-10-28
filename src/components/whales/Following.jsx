@@ -57,7 +57,7 @@ function FollowedCard({ wallet, following }) {
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div>
           <p className="text-[10px] text-muted-foreground">All-time P&L</p>
-          <p className="font-mono font-semibold">{stats.data ? <Pnl value={stats.data.totalPnl} /> : '…'}</p>
+          <p className="font-mono font-semibold">{stats.data ? <Pnl value={stats.data.tradePnl} /> : '…'}</p>
         </div>
         <div>
           <p className="text-[10px] text-muted-foreground">Portfolio</p>

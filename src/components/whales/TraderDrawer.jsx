@@ -54,10 +54,10 @@ const PnlTooltip = ({ active, payload }) => {
     <div className="bg-card border border-border rounded-lg px-3 py-2 shadow-xl text-xs">
       <p className="text-muted-foreground">{format(p.t, 'MMM d, HH:mm')}</p>
       <p>
-        <Pnl value={p.total} compact={false} /> <span className="text-muted-foreground">total</span>
+        <Pnl value={p.trade} compact={false} /> <span className="text-muted-foreground">P&L before fees</span>
       </p>
       <p className="text-muted-foreground">
-        realized <Pnl value={p.realized} /> · open <Pnl value={p.unrealized} />
+        after fees and rebates <Pnl value={p.total} /> · open <Pnl value={p.unrealized} />
       </p>
     </div>
   );
@@ -66,8 +66,8 @@ const PnlTooltip = ({ active, payload }) => {
 function PnlChart({ address, range }) {
   const pnl = useTraderPnl(address, range);
   const points = pnl.data || [];
-  const last = points[points.length - 1]?.total ?? 0;
-  const first = points[0]?.total ?? 0;
+  const last = points[points.length - 1]?.trade ?? 0;
+  const first = points[0]?.trade ?? 0;
   const up = last >= first;
   if (pnl.isLoading) return <div className="h-full flex items-center justify-center text-xs text-muted-foreground">Loading P&L…</div>;
   if (pnl.error) return <div className="h-full flex items-center justify-center text-xs text-destructive px-4 text-center">{pnl.error.message}</div>;
@@ -84,7 +84,7 @@ function PnlChart({ address, range }) {
         <XAxis dataKey="t" hide />
         <YAxis hide domain={['auto', 'auto']} />
         <Tooltip content={<PnlTooltip />} />
-        <Area type="monotone" dataKey="total" stroke={up ? 'hsl(142,71%,45%)' : 'hsl(0,72%,51%)'} strokeWidth={1.5} fill="url(#trader-pnl)" dot={false} isAnimationActive={false} />
+        <Area type="monotone" dataKey="trade" stroke={up ? 'hsl(142,71%,45%)' : 'hsl(0,72%,51%)'} strokeWidth={1.5} fill="url(#trader-pnl)" dot={false} isAnimationActive={false} />
       </AreaChart>
     </ResponsiveContainer>
   );
@@ -112,17 +112,22 @@ function OutcomeTag({ outcome, index }) {
   );
 }
 
-function PositionsTable({ rows, loading, error }) {
+function PositionsTable({ rows: all, loading, error }) {
   if (loading) return <Spinner className="py-8" />;
   if (error) return <ErrorState error={error} />;
-  if (!rows?.length) return <p className="py-8 text-center text-xs text-muted-foreground">No open positions</p>;
+  // Resolved positions that were never redeemed still show up with a value of 0. They are
+  // already counted in realized P&L, so they stay out of the open list and its total.
+  const rows = (all || []).filter(p => p.currentValue > 0 && !p.redeemable);
+  const resolved = (all || []).filter(p => !(p.currentValue > 0) || p.redeemable);
+  if (!rows.length && !resolved.length) return <p className="py-8 text-center text-xs text-muted-foreground">No open positions</p>;
   const total = rows.reduce((s, p) => s + p.currentValue, 0);
   const pnl = rows.reduce((s, p) => s + p.cashPnl, 0);
   return (
     <div>
       <div className="flex items-center justify-between py-2 text-[11px] text-muted-foreground">
         <span>
-          {rows.length} position{rows.length === 1 ? '' : 's'} · {formatUsd(total, { compact: true })}
+          {rows.length} open · {formatUsd(total, { compact: true })}
+          {resolved.length > 0 && ` · ${resolved.length} resolved, not yet redeemed`}
         </span>
         <span>
           <Pnl value={pnl} /> unrealized
@@ -230,6 +235,7 @@ function TraderProfile({ address, seed, onClose }) {
   const { openLaunch } = useLaunch();
   const [range, setRange] = useState('1m');
   const name = seed?.name || shortAddress(address);
+  const liveMarkets = new Set((positions.data || []).filter(p => p.currentValue > 0 && !p.redeemable).map(p => p.conditionId)).size;
   const joined = stats.data?.joinedAt;
   const days = ageDays(joined);
   const isFollowing = following.isFollowing(address);
@@ -265,7 +271,7 @@ function TraderProfile({ address, seed, onClose }) {
               </span>
               <span className="inline-flex items-center gap-1">
                 <Layers className="w-3 h-3" />
-                {stats.data ? `${stats.data.marketsTraded} markets · ${stats.data.tradeCount} fills` : '…'}
+                {stats.data ? `${stats.data.marketsTraded.toLocaleString()} markets · ${stats.data.tradeCount.toLocaleString()} fills` : '…'}
               </span>
               {stats.data?.views > 0 && (
                 <span className="inline-flex items-center gap-1">
@@ -298,16 +304,26 @@ function TraderProfile({ address, seed, onClose }) {
           <ErrorState error={stats.error} hint="The Data API rate-limits bursts. Close and reopen in a moment." />
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            <Tile label="Portfolio value" value={value.data != null ? formatUsd(value.data, { compact: true }) : '…'} sub={concentration.markets ? `${concentration.markets} market${concentration.markets === 1 ? '' : 's'}` : null} />
-            <Tile label="All-time P&L" value={stats.data ? <Pnl value={stats.data.totalPnl} /> : '…'} sub={stats.data ? `realized ${formatUsd(stats.data.realizedPnl, { compact: true })}` : null} />
-            <Tile label="Cash volume" value={stats.data ? formatUsd(stats.data.volume, { compact: true }) : '…'} sub={stats.data ? `fees ${formatUsd(stats.data.feesPaid, { compact: true })}` : null} />
-            <Tile label="Win rate" value={closed.isLoading ? '…' : summary.winRate != null ? `${Math.round(summary.winRate * 100)}%` : '—'} sub={closed.data ? `${summary.wins}W · ${summary.losses}L settled` : null} />
+            <Tile label="Positions value" value={value.data != null ? formatUsd(value.data, { compact: true }) : '…'} sub={liveMarkets ? `${liveMarkets} open market${liveMarkets === 1 ? '' : 's'}` : null} />
+            <Tile
+              label="All-time P&L"
+              value={stats.data ? <Pnl value={stats.data.tradePnl} /> : '…'}
+              sub={stats.data ? `after fees & rebates ${formatUsd(stats.data.totalPnl, { compact: true })}` : null}
+              title={stats.data ? `Same number as the Polymarket profile (trading P&L before fees). Realized ${formatUsd(stats.data.realizedPnl, { compact: true })}, fees paid ${formatUsd(stats.data.feesPaid, { compact: true })}, rebates and rewards ${formatUsd(stats.data.walletIncome, { compact: true })}, open ${formatUsd(stats.data.unrealizedPnl, { compact: true })}.` : null}
+            />
+            <Tile label="Total volume" value={stats.data ? formatUsd(stats.data.volumeTotal, { compact: true }) : '…'} sub={stats.data ? `cash ${formatUsd(stats.data.volume, { compact: true })} · fees ${formatUsd(stats.data.feesPaid, { compact: true })}` : null} />
+            <Tile
+              label="Win rate"
+              value={closed.isLoading ? '…' : summary.winRate != null ? `${Math.round(summary.winRate * 100)}%` : '—'}
+              sub={closed.data ? `${summary.wins}W · ${summary.losses}L${closed.data.length >= 500 ? ' · last 500 settled' : ' settled'}` : null}
+              title="Share of settled positions that made money. For busy wallets this covers the most recent 500 settled positions."
+            />
             <Tile label="Biggest win" value={stats.data ? formatUsd(stats.data.biggestWin, { compact: true }) : '…'} sub={summary.biggestLoss < 0 ? `worst ${formatUsd(summary.biggestLoss, { compact: true })}` : null} />
             <Tile label="Trader score" value={isLoading ? '…' : <ScoreBadge score={score.score} label={score.label} />} sub={score.parts ? 'hover for breakdown' : `${summary.count}/5 settled`} title={scoreBreakdown(score)} />
           </div>
         )}
 
-        {concentration.topShare != null && concentration.topShare >= 0.5 && concentration.total > 0 && (
+        {concentration.topShare != null && concentration.topShare >= 0.5 && concentration.total > 0 && liveMarkets > 1 && (
           <p className="text-[11px] text-amber-300/90">
             {Math.round(concentration.topShare * 100)}% of the portfolio sits in one market: {concentration.top?.title}
           </p>

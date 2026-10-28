@@ -4,7 +4,18 @@ An open-source autopilot for [Polymarket](https://polymarket.com).
 
 Pick an amount. Pick a trader to copy, or a strategy to run. Start it. The app watches live Polymarket data every minute, copies the trader (or applies the strategy), prices every position, and closes positions when the trader sells or when your limits say so. Next to it, a whale tracker shows where big money and smart money is going, so you know who is worth copying.
 
+**Try it now: [chirpy-poly-trade-flow.base44.app](https://chirpy-poly-trade-flow.base44.app).** No sign-up. You get a sandbox with paper money and two sample portfolios running on live data. It lives in your browser and resets after two hours. The hosted copy is a demo only. To run the full version (saved data, server-side ticks), fork this repo and deploy it to your own Base44 app. See [Run it yourself](#run-it-yourself).
+
 Right now the app **paper trades on real market data**. It reads real prices, order books, positions and wallets. It does not sign or send orders. "Live" portfolios track your real amount with simulated fills until a signer is connected (see [Live execution](#live-execution-status)).
+
+## Screenshots
+
+| | |
+| --- | --- |
+| ![Dashboard with running portfolios](docs/screenshots/01-dashboard.jpg) | ![Portfolio detail with the engine log](docs/screenshots/02-portfolio.jpg) |
+| ![Wizard: pick a trader to copy](docs/screenshots/03-wizard.jpg) | ![Whale flow](docs/screenshots/04-whale-flow.jpg) |
+| ![Smart money](docs/screenshots/05-smart-money.jpg) | ![Insider scan](docs/screenshots/06-insider-scan.jpg) |
+| ![Trader profile](docs/screenshots/07-trader.jpg) | ![Market explorer with holders and big fills](docs/screenshots/08-markets.jpg) |
 
 ---
 
@@ -127,6 +138,7 @@ Real orders need an EIP-712 signature from a wallet key plus CLOB API credential
 - **Frontend.** React 18, Vite, Tailwind, shadcn/ui, TanStack Query, Recharts. Pages are in `src/pages`. Features are in `src/components/{dashboard,bot-setup,whales,markets}`.
 - **Base44.** Hosting, login, the database (entities), scheduled functions and the LLM integration. The SDK client is `src/api/base44Client.js`. Entity schemas, with row-level security, are in `base44/entities/*.jsonc`.
 - **Engine.** `src/engine` has no React and no SDK calls. `executeTick` takes an `api` adapter (`createTrades`, `updateTrades`, `updateBot`). The browser passes the user's client. The backend passes the service role. Base44's preview sandbox only serves `src/`, and backend functions can only import from `base44/shared/`. So the engine is edited in `src/engine` and copied to `base44/shared/engine` with `npm run engine:sync`. `npm run lint` fails if the two copies differ.
+- **Demo mode.** `src/api/base44Client.js` exports a proxy. The app owner, signed in, gets the real Base44 client. Everyone else gets `src/api/localClient.js`, the same interface backed by the browser's localStorage, seeded by `src/lib/demoSeed.js` with two sample paper portfolios. The sandbox expires after two hours. Nothing in the demo costs money: Polymarket's APIs are public, there are no database writes, and the AI brief (the only paid call) is off. The switch happens in `src/lib/AuthContext.jsx` before any page renders. The owner signs in through the unlinked `/login` path.
 - **Scheduler.** The browser hook ticks every 60 seconds while the dashboard is open. `botTick` runs every 5 minutes on the server. Whichever side ticked a bot in the last few minutes wins, so nothing is processed twice. `whaleScan` stores notable fills every 5 minutes.
 - **Rate limits.** The Data API answers bursts with 429 errors. Wallet lookups go through a gate that allows 4 calls at a time (`createLimiter`), and `getJson` retries 429 and 5xx answers after a short pause.
 
@@ -160,7 +172,10 @@ src/
   lib/useWhaleAlerts.js     live alerts + stored signals
   lib/useUserProfile.js     user settings + live wallet funds
   lib/wallet.js             read-only Polygon and browser-wallet helpers
+  api/localClient.js        browser-only client for demo mode
+  lib/demoSeed.js           sample portfolios for a fresh demo sandbox
   pages/                    Dashboard, Settings
+  components/layout/        side rail, demo banner
   components/bot-setup/     portfolio wizard, trader picker, strategy cards, risk controls
   components/dashboard/     stats, P&L chart, running portfolios, completed runs, detail modal
   components/whales/        whale flow, smart money, insider scan, following, alerts, trader drawer
@@ -197,6 +212,7 @@ The app is connected to this repository with Base44's two-way GitHub sync:
 - Only the `main` branch syncs. Work on branches, then merge to `main`.
 - Entity schema changes in `base44/entities` deploy on sync. Backend functions and their schedules deploy with `npx base44 deploy`. The local `function.jsonc` files are the source of truth. Changes made in the Base44 dashboard are overwritten on the next deploy.
 - With a *per user* GitHub connection (Workspace settings, then GitHub), builder commits show under your own GitHub account instead of Base44's bot.
+- For the public demo, the app must allow visitors without an account (Base44 app settings) and keep sign-up invite-only. The owner gets the full app; everyone else gets demo mode.
 
 ## Contributing
 

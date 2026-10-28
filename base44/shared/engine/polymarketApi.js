@@ -295,13 +295,22 @@ export async function fetchWalletTrades(address, { limit = 25 } = {}) {
   return (Array.isArray(rows) ? rows : []).map(normalizeTrade);
 }
 
-/** Lifetime numbers for a wallet (what a Polymarket profile header shows). */
+/**
+ * Lifetime numbers for a wallet. Polymarket's profile page shows
+ * `trade_pnl` as "Profit/Loss" (trading P&L before fees) and `volume` as
+ * "Total Volume", so those are `tradePnl` and `volumeTotal` here.
+ *   realizedPnl   closed positions, after fees
+ *   unrealizedPnl open positions, marked to market
+ *   totalPnl      economic P&L: realized + unrealized + rebates and rewards
+ *   volume        cash that actually changed hands (volume_usdc)
+ */
 export async function fetchUserStats(address) {
   const res = await getJson(`${DATA_API}/v2/user-stats?user=${address}`);
   const d = res?.data || res || {};
   const pnl = d.all_time_pnl || {};
   const realized = Number(pnl.realized_pnl || 0);
   const unrealized = Number(pnl.unrealized_pnl || 0);
+  const economic = pnl.economic_pnl != null ? Number(pnl.economic_pnl) : realized + unrealized;
   return {
     address: String(d.proxy_wallet || address).toLowerCase(),
     joinedAt: d.join_date ? Number(d.join_date) * 1000 : null,
@@ -310,8 +319,11 @@ export async function fetchUserStats(address) {
     biggestWin: Number(d.biggest_win || 0),
     realizedPnl: realized,
     unrealizedPnl: unrealized,
-    totalPnl: pnl.economic_pnl != null ? Number(pnl.economic_pnl) : realized + unrealized,
+    totalPnl: economic,
+    tradePnl: pnl.trade_pnl != null ? Number(pnl.trade_pnl) : economic,
+    walletIncome: Number(pnl.wallet_income || 0),
     volume: Number(pnl.volume_usdc ?? pnl.volume ?? 0),
+    volumeTotal: Number(pnl.volume ?? pnl.volume_usdc ?? 0),
     feesPaid: Math.abs(Number(pnl.fees_paid || 0)),
     views: Number(d.views || 0),
   };
@@ -326,11 +338,13 @@ export async function fetchPnlHistory(address, { interval = '1m' } = {}) {
   return (res?.data?.points || []).map(p => {
     const realized = Number(p.realized_pnl || 0);
     const unrealized = Number(p.unrealized_pnl || 0);
+    const total = p.economic_pnl != null ? Number(p.economic_pnl) : realized + unrealized;
     return {
       t: Number(p.timestamp) * 1000,
       realized,
       unrealized,
-      total: p.economic_pnl != null ? Number(p.economic_pnl) : realized + unrealized,
+      total,
+      trade: p.trade_pnl != null ? Number(p.trade_pnl) : total, // the line Polymarket's profile chart draws
       volume: Number(p.volume_usdc ?? p.volume ?? 0),
       trades: Number(p.trade_count || 0),
     };
@@ -367,8 +381,12 @@ export async function fetchPositions(address, { limit = 100 } = {}) {
   }));
 }
 
-/** Settled positions — what the wallet already cashed out — biggest winners first. */
-export async function fetchClosedPositions(address, { limit = 300, sortBy = 'REALIZED_PNL', sortDirection = 'DESC' } = {}) {
+/**
+ * Settled positions, newest first. The API caps one page, so for busy
+ * wallets this is a recent sample (the last `limit` settled positions), not
+ * the whole history. Sorting by profit instead would return only winners.
+ */
+export async function fetchClosedPositions(address, { limit = 500, sortBy = 'TIMESTAMP', sortDirection = 'DESC' } = {}) {
   const params = new URLSearchParams({
     user: address,
     status: 'CLOSED',

@@ -159,7 +159,7 @@ export function useTraderPositions(address, { enabled = true } = {}) {
 export function useTraderClosed(address, { enabled = true } = {}) {
   return useQuery({
     queryKey: ['trader-closed', address],
-    queryFn: gated(() => fetchClosedPositions(address, { limit: 300 })),
+    queryFn: gated(() => fetchClosedPositions(address, { limit: 500 })),
     staleTime: 10 * MINUTE,
     enabled: !!address && enabled,
     retry: 1,

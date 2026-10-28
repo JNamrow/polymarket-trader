@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { base44, enableDemoMode, signIn } from '@/api/base44Client';
+import { seedDemo } from '@/lib/demoSeed';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
 
@@ -12,6 +13,23 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
+  const [isDemo, setIsDemo] = useState(false);
+
+  // Demo mode: a visitor without an account gets a sandbox in their own browser.
+  const enterDemo = async () => {
+    enableDemoMode();
+    try {
+      await seedDemo(base44);
+    } catch (err) {
+      console.warn('Demo seed skipped:', err?.message || err);
+    }
+    setIsDemo(true);
+    setUser(null);
+    setIsAuthenticated(false);
+    setAuthError(null);
+    setIsLoadingAuth(false);
+    setIsLoadingPublicSettings(false);
+  };
 
   useEffect(() => {
     checkAppState();
@@ -40,41 +58,26 @@ export const AuthProvider = ({ children }) => {
         // If we got the app public settings successfully, check if user is authenticated
         if (appParams.token) {
           await checkUserAuth();
+          setIsLoadingPublicSettings(false);
         } else {
-          setIsLoadingAuth(false);
-          setIsAuthenticated(false);
+          await enterDemo();
         }
-        setIsLoadingPublicSettings(false);
       } catch (appError) {
         console.error('App state check failed:', appError);
         
         // Handle app-level errors
-        if (appError.status === 403 && appError.data?.extra_data?.reason) {
-          const reason = appError.data.extra_data.reason;
-          if (reason === 'auth_required') {
-            setAuthError({
-              type: 'auth_required',
-              message: 'Authentication required'
-            });
-          } else if (reason === 'user_not_registered') {
-            setAuthError({
-              type: 'user_not_registered',
-              message: 'User not registered for this app'
-            });
-          } else {
-            setAuthError({
-              type: reason,
-              message: appError.message
-            });
-          }
-        } else {
+        const reason = appError.status === 403 ? appError.data?.extra_data?.reason : null;
+        if (reason === 'user_not_registered') {
           setAuthError({
-            type: 'unknown',
-            message: appError.message || 'Failed to load app'
+            type: 'user_not_registered',
+            message: 'User not registered for this app'
           });
+          setIsLoadingPublicSettings(false);
+          setIsLoadingAuth(false);
+        } else {
+          // auth_required, a missing token, or an unreachable backend all lead to the demo.
+          await enterDemo();
         }
-        setIsLoadingPublicSettings(false);
-        setIsLoadingAuth(false);
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -100,12 +103,9 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       
-      // If user auth fails, it might be an expired token
+      // An expired or invalid token is treated like no token: demo mode, with Sign in in the banner.
       if (error.status === 401 || error.status === 403) {
-        setAuthError({
-          type: 'auth_required',
-          message: 'Authentication required'
-        });
+        await enterDemo();
       }
     }
   };
@@ -124,8 +124,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const navigateToLogin = () => {
-    // Use the SDK's redirectToLogin method
-    base44.auth.redirectToLogin(window.location.href);
+    // Always the real Base44 login, even while the app runs in demo mode.
+    signIn();
   };
 
   return (
@@ -136,6 +136,7 @@ export const AuthProvider = ({ children }) => {
       isLoadingPublicSettings,
       authError,
       appPublicSettings,
+      isDemo,
       logout,
       navigateToLogin,
       checkAppState

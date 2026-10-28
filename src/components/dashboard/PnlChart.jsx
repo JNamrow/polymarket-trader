@@ -44,7 +44,10 @@ function buildSeries(botRuns) {
     latest.set(p.botId, p.pnl);
     let total = 0;
     for (const v of latest.values()) total += v;
-    series.push({ t: p.t, pnl: Math.round(total * 100) / 100, bots: latest.size });
+    const point = { t: p.t, pnl: Math.round(total * 100) / 100, bots: latest.size };
+    // Two bots ticked in the same millisecond give one chart point, not two with the same x.
+    if (series.length && series[series.length - 1].t === p.t) series[series.length - 1] = point;
+    else series.push(point);
   }
   if (series.length <= MAX_POINTS) return series;
   const step = Math.ceil(series.length / MAX_POINTS);
