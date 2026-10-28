@@ -57,7 +57,7 @@ export default function InsiderScan({ trades, signalsById, pendingStats, totalWa
 
   return (
     <div className="space-y-4">
-      <div className="bg-card border border-border rounded-xl p-4 text-xs text-muted-foreground space-y-2">
+      <div className="surface p-4 text-xs text-muted-foreground space-y-2">
         <p className="flex items-center gap-2 text-foreground text-sm font-medium">
           <Radar className="w-4 h-4 text-primary" /> How this scan works
         </p>

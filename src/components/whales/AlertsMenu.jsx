@@ -60,7 +60,7 @@ export default function AlertsMenu({ alerts, unread, markRead, prefs, stored = [
           Followed wallets{prefs?.followed === false ? ' (off)' : ''} · insiders{prefs?.insiders === false ? ' (off)' : ''} · contrarian ≥ {formatUsd(prefs?.minUsd || 0, { compact: true })}
           {prefs?.contrarian === false ? ' (off)' : ''} · whale ≥ {formatUsd((prefs?.minUsd || 0) * 4, { compact: true })}
         </p>
-        <div className="max-h-[60vh] overflow-y-auto">
+        <div className="max-h-[60vh] overflow-y-auto overscroll-contain">
           {alerts.length === 0 ? (
             <p className="px-3 py-6 text-center text-xs text-muted-foreground">Nothing yet. Alerts appear as fills come in.</p>
           ) : (

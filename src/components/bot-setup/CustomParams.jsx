@@ -6,7 +6,7 @@ export default function CustomParams({ params, onChange }) {
   const update = (key, value) => onChange({ ...params, [key]: value });
 
   return (
-    <div className="space-y-4 bg-card border border-border rounded-xl p-4">
+    <div className="space-y-4 surface p-4">
       <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
         Custom Parameters
       </label>

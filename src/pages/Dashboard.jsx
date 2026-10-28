@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -51,6 +51,12 @@ export default function Dashboard() {
 
   const [activeTab, setActiveTab] = useState('bots');
   const [launch, setLaunch] = useState(null); // { mode: 'paper' | 'live', pilot? } | null
+  // The view's sections stagger in on first load only; later updates render in place.
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setEntered(true), 800);
+    return () => clearTimeout(id);
+  }, []);
   const openLaunch = useCallback(({ mode = 'live', pilot = null } = {}) => setLaunch({ mode, pilot }), []);
 
   const liveBots = botRuns.filter(r => r.status === 'running' || r.status === 'paused');
@@ -84,7 +90,7 @@ export default function Dashboard() {
   return (
     <LaunchContext.Provider value={{ openLaunch }}>
     <TraderDrawerProvider>
-      <div className="space-y-4 lg:space-y-5">
+      <div className={cn('page-enter space-y-4 lg:space-y-5', entered && 'entered')}>
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
@@ -94,7 +100,7 @@ export default function Dashboard() {
                 key={id}
                 onClick={() => setActiveTab(id)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+                  'pressable flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium',
                   activeTab === id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 )}
               >

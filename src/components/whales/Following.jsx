@@ -29,7 +29,7 @@ function FollowedCard({ wallet, following }) {
   };
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+    <div className="surface p-4 space-y-3">
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -118,7 +118,7 @@ export default function Following({ following }) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-card border border-border rounded-xl p-4">
+      <div className="surface p-4">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Follow a wallet</p>
         <div className="flex flex-col sm:flex-row gap-2">
           <Input value={address} onChange={e => setAddress(e.target.value)} placeholder="0x… Polymarket profile address" className="bg-background border-border font-mono text-xs h-9 flex-1" />

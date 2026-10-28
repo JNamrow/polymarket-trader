@@ -8,7 +8,7 @@ function StatCard({ label, value, subValue, icon: Icon, trend }) {
   const isNegative = trend === 'down';
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 lg:p-5">
+    <div className="surface p-4 lg:p-5">
       <div className="flex items-start justify-between mb-3">
         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</span>
         <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">

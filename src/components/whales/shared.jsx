@@ -2,6 +2,7 @@ import React from 'react';
 import { BadgeCheck, Copy, ExternalLink, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { shortAddress, profileUrl, formatUsd, CATEGORY_LABELS } from '@/api/polymarket';
 import { useTraderDrawer } from './traderDrawerContext';
@@ -24,7 +25,7 @@ export function shortAgo(ts, now = Date.now()) {
 
 export function TraderAvatar({ src, address = '', size = 'md', className }) {
   const dims = size === 'sm' ? 'w-6 h-6 text-[9px]' : size === 'lg' ? 'w-12 h-12 text-sm' : 'w-8 h-8 text-[10px]';
-  if (src) return <img src={src} alt="" className={cn('rounded-lg object-cover bg-secondary flex-shrink-0', dims, className)} loading="lazy" />;
+  if (src) return <img src={src} alt="" className={cn('media rounded-lg object-cover bg-secondary flex-shrink-0', dims, className)} loading="lazy" />;
   return (
     <div className={cn('rounded-lg bg-secondary flex items-center justify-center font-mono text-muted-foreground flex-shrink-0', dims, className)}>
       {String(address).slice(2, 4).toUpperCase()}
@@ -43,7 +44,7 @@ export function TraderLink({ address, name, profileImage, verified = false, size
         e.stopPropagation();
         open(address, { name, profileImage, verified });
       }}
-      className={cn('inline-flex items-center gap-2 min-w-0 text-left text-foreground hover:text-primary transition-colors', className)}
+      className={cn('inline-flex items-center gap-2 min-w-0 text-left text-foreground hover:text-primary transition-colors duration-150', className)}
       title={address}
     >
       {showAvatar && <TraderAvatar src={profileImage} address={address} size={size === 'sm' ? 'sm' : 'md'} />}
@@ -158,7 +159,7 @@ export function Chip({ active, onClick, children, small = false, className, titl
       onClick={onClick}
       title={title}
       className={cn(
-        'rounded-full font-medium border transition-all whitespace-nowrap',
+        'pressable rounded-full font-medium border whitespace-nowrap',
         small ? 'px-2 py-0.5 text-[11px]' : 'px-3 py-1 text-xs',
         active ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-card border-border text-muted-foreground hover:text-foreground',
         className
@@ -177,7 +178,7 @@ export function Segmented({ options, value, onChange, className }) {
           key={String(o.id)}
           type="button"
           onClick={() => onChange(o.id)}
-          className={cn('px-2 py-0.5 rounded text-[11px] font-medium whitespace-nowrap', value === o.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+          className={cn('pressable px-2 py-0.5 rounded-sm text-[11px] font-medium whitespace-nowrap', value === o.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
         >
           {o.label}
         </button>
@@ -188,7 +189,7 @@ export function Segmented({ options, value, onChange, className }) {
 
 export function Tile({ label, value, sub, className, title }) {
   return (
-    <div className={cn('bg-card border border-border rounded-xl p-3', className)} title={title}>
+    <div className={cn('surface p-3', className)} title={title}>
       <p className="text-[11px] text-muted-foreground">{label}</p>
       <div className="text-base font-mono font-semibold text-foreground mt-0.5 leading-tight">{value}</div>
       {sub && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{sub}</p>}
@@ -200,6 +201,23 @@ export function Spinner({ className }) {
   return (
     <div className={cn('py-12 flex items-center justify-center', className)}>
       <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+    </div>
+  );
+}
+
+/** Placeholder rows while a list loads for the first time. */
+export function SkeletonRows({ rows = 6, className }) {
+  return (
+    <div className={cn('divide-y divide-border/60', className)} aria-hidden="true">
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={i} className="flex items-center gap-3 px-4 py-3">
+          <Skeleton className="h-3 w-8 rounded-sm" />
+          <Skeleton className="h-6 w-6 rounded-md" />
+          <Skeleton className="h-3 w-28 rounded-sm" />
+          <Skeleton className="h-3 flex-1 rounded-sm" />
+          <Skeleton className="h-3 w-12 rounded-sm" />
+        </div>
+      ))}
     </div>
   );
 }

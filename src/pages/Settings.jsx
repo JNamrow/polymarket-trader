@@ -14,7 +14,7 @@ import { profileUrl, shortAddress, formatUsd } from '@/api/polymarket';
 
 function Section({ icon: Icon, title, children, accent }) {
   return (
-    <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+    <div className="surface p-5 space-y-4">
       <div className="flex items-center gap-2">
         <Icon className={cn('w-4 h-4', accent || 'text-muted-foreground')} />
         <h2 className="text-sm font-medium text-foreground">{title}</h2>
@@ -34,6 +34,11 @@ export default function Settings() {
   const [browserWallet, setBrowserWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
   const [alertPrefs, setAlertPrefs] = useState(ALERT_DEFAULTS);
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setEntered(true), 800);
+    return () => clearTimeout(id);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -89,7 +94,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
+    <div className={cn('page-enter max-w-xl mx-auto space-y-6', entered && 'entered')}>
       <div className="flex items-center gap-3">
         <SettingsIcon className="w-5 h-5 text-primary" />
         <h1 className="text-lg font-semibold text-foreground">Settings</h1>

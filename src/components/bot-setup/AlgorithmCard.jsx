@@ -53,7 +53,7 @@ export default function AlgorithmSelector({ selected, onSelect }) {
               key={id}
               onClick={() => onSelect(id)}
               className={cn(
-                'flex items-start gap-3 p-3.5 rounded-xl border text-left transition-all duration-200',
+                'flex items-start gap-3 p-3.5 rounded-xl border text-left transition-[color,background-color,border-color,box-shadow] duration-150 ease-out',
                 isSelected ? 'border-primary/50 bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-card hover:border-border hover:bg-secondary/50'
               )}
             >

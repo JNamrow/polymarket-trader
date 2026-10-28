@@ -26,7 +26,7 @@ function DesktopSidebar({ location }) {
               to={path}
               title={label}
               className={cn(
-                "flex items-center justify-center w-10 h-10 mx-auto rounded-lg transition-all duration-200",
+                "pressable flex items-center justify-center w-10 h-10 mx-auto rounded-lg",
                 isActive
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -38,7 +38,7 @@ function DesktopSidebar({ location }) {
         })}
       </nav>
       <div className="p-3 border-t border-sidebar-border flex justify-center">
-        <div className="w-2 h-2 rounded-full bg-primary animate-pulse-glow" />
+        <div className="w-2 h-2 rounded-full bg-primary motion-safe:animate-pulse-glow" />
       </div>
     </aside>
   );
@@ -55,7 +55,7 @@ function MobileTabBar({ location }) {
             key={path}
             to={path}
             className={cn(
-              "flex flex-col items-center gap-1 py-3 px-6 rounded-xl transition-all",
+              "pressable flex flex-col items-center gap-1 py-3 px-6 rounded-xl",
               isActive ? "text-primary" : "text-muted-foreground"
             )}
           >

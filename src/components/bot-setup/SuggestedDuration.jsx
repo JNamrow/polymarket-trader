@@ -46,7 +46,7 @@ export default function SuggestedDuration({ fund, algorithm, categories, value, 
 
       {/* Suggested */}
       <div className={cn(
-        "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200",
+        "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-[color,background-color,border-color,box-shadow] duration-150 ease-out",
         !useCustom ? "border-primary/50 bg-primary/5" : "border-border bg-card hover:bg-secondary/50"
       )} onClick={() => { setUseCustom(false); onChange(suggested); }}>
         <Clock className={cn("w-4 h-4", !useCustom ? "text-primary" : "text-muted-foreground")} />
@@ -60,7 +60,7 @@ export default function SuggestedDuration({ fund, algorithm, categories, value, 
 
       {/* Custom */}
       <div className={cn(
-        "flex items-center gap-3 p-3 rounded-xl border transition-all duration-200",
+        "flex items-center gap-3 p-3 rounded-xl border transition-[color,background-color,border-color,box-shadow] duration-150 ease-out",
         useCustom ? "border-primary/50 bg-primary/5" : "border-border bg-card"
       )}>
         <div className="flex items-center gap-2 flex-1" onClick={() => setUseCustom(true)}>

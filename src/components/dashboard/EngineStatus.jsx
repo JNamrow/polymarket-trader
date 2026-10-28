@@ -23,7 +23,7 @@ export default function EngineStatus({ engine, runningCount }) {
       <span
         className={cn(
           'w-1.5 h-1.5 rounded-full',
-          engine.running ? 'bg-sky-400 animate-pulse' : runningCount > 0 ? 'bg-primary animate-pulse-glow' : 'bg-muted-foreground/40'
+          engine.running ? 'bg-sky-400 motion-safe:animate-pulse' : runningCount > 0 ? 'bg-primary motion-safe:animate-pulse-glow' : 'bg-muted-foreground/40'
         )}
       />
       <span className="text-xs text-muted-foreground font-mono hidden sm:inline">{label}</span>

@@ -42,6 +42,18 @@
     --sidebar-accent-foreground: 210 20% 92%;
     --sidebar-border: 220 14% 14%;
     --sidebar-ring: 142 71% 45%;
+
+    /* Motion: strong curves read as intentional; the built-in ones are too weak. */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-ui: cubic-bezier(0.2, 0, 0, 1);
+
+    /* Surfaces: on a dark background depth shadows vanish, so elevation is a single light ring. */
+    --shadow-border: 0 0 0 1px oklch(1 0 0 / 0.08);
+    --shadow-border-hover: 0 0 0 1px oklch(1 0 0 / 0.13);
+    --shadow-raised: 0 0 0 1px oklch(1 0 0 / 0.1), 0 12px 32px -12px oklch(0 0 0 / 0.6);
+    --image-outline: oklch(1 0 0 / 0.1);
   }
 
   .dark {
@@ -87,6 +99,112 @@
 
   body {
     @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Numbers line up in tables and tiles. */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Icon strokes track the text next to them: 1.5px beside regular text, 2px beside medium and bolder. */
+  .lucide {
+    stroke-width: 1.5px;
+  }
+  .lucide * {
+    vector-effect: non-scaling-stroke;
+  }
+  :is(.font-medium, .font-semibold, .font-bold, button) .lucide {
+    stroke-width: 2px;
+  }
+
+  /* Content images get a hairline inside their edge; never a tinted one. */
+  img.media {
+    outline: 1px solid var(--image-outline);
+    outline-offset: -1px;
+  }
+}
+
+@layer components {
+  /* A card. The ring is a shadow, so the surface reads as lifted rather than boxed in;
+     the transparent border keeps the size and gives forced-colors mode an edge to draw. */
+  .surface {
+    @apply bg-card rounded-xl;
+    border: 1px solid transparent;
+    box-shadow: var(--shadow-border);
+  }
+  .surface-hover {
+    transition-property: box-shadow;
+    transition-duration: 150ms;
+    transition-timing-function: ease-out;
+  }
+  @media (hover: hover) {
+    .surface-hover:hover {
+      box-shadow: var(--shadow-border-hover);
+    }
+  }
+
+  /* Pressable chips, pills and text buttons: instant color feedback plus a small press. */
+  .pressable {
+    transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+    transition-duration: 150ms;
+    transition-timing-function: ease-out;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .pressable:not(:disabled):active {
+      transform: scale(0.96);
+    }
+  }
+
+  /* First load of a view: its sections enter one after another. Routine updates never replay it. */
+  .page-enter:not(.entered) > * {
+    animation: fade-in 300ms ease-out both;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .page-enter:not(.entered) > * {
+      animation-name: fade-in-up;
+    }
+  }
+  .page-enter:not(.entered) > :nth-child(2) {
+    animation-delay: 80ms;
+  }
+  .page-enter:not(.entered) > :nth-child(3) {
+    animation-delay: 160ms;
+  }
+  .page-enter:not(.entered) > :nth-child(4) {
+    animation-delay: 240ms;
+  }
+  .page-enter:not(.entered) > :nth-child(n + 5) {
+    animation-delay: 320ms;
+  }
+}
+
+@layer utilities {
+  /* A faster spinner makes the same wait feel shorter. */
+  .animate-spin {
+    animation-duration: 650ms;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(4px);
+  }
+}
+
+/* Reduced motion: keep fades and color changes, drop movement, scale and blur. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-glow,
+  .animate-ping {
+    animation: none;
   }
 }
 

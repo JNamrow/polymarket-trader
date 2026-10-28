@@ -125,9 +125,9 @@ function MarketDetail({ market }) {
 function MarketRow({ market, expanded, onToggle }) {
   return (
     <div className="border-b border-border last:border-b-0">
-      <div className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/40 transition-colors cursor-pointer" onClick={onToggle}>
+      <div className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/40 transition-colors duration-100 cursor-pointer" onClick={onToggle}>
         {market.image ? (
-          <img src={market.image} alt="" className="w-8 h-8 rounded-md object-cover flex-shrink-0 bg-secondary" loading="lazy" />
+          <img src={market.image} alt="" className="media w-8 h-8 rounded-md object-cover flex-shrink-0 bg-secondary" loading="lazy" />
         ) : (
           <div className="w-8 h-8 rounded-md bg-secondary flex-shrink-0" />
         )}
@@ -209,7 +209,7 @@ export default function MarketsExplorer() {
               setExpanded(null);
             }}
             className={cn(
-              'px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all',
+              'pressable px-3.5 py-1.5 rounded-full text-xs font-medium border',
               category === id ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-card border-border text-muted-foreground hover:text-foreground'
             )}
           >
@@ -237,15 +237,15 @@ export default function MarketsExplorer() {
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-card border border-border rounded-xl p-3 text-center">
+        <div className="surface p-3 text-center">
           <p className="text-xs text-muted-foreground">Live markets</p>
           <p className="text-lg font-mono font-bold text-foreground mt-0.5">{universe.data?.markets.length ?? '—'}</p>
         </div>
-        <div className="bg-card border border-border rounded-xl p-3 text-center">
+        <div className="surface p-3 text-center">
           <p className="text-xs text-muted-foreground">24h volume (shown)</p>
           <p className="text-lg font-mono font-bold text-primary mt-0.5">{formatUsd(totalVolume, { compact: true })}</p>
         </div>
-        <div className="bg-card border border-border rounded-xl p-3 text-center">
+        <div className="surface p-3 text-center">
           <p className="text-xs text-muted-foreground">Updated</p>
           <p className="text-lg font-mono font-bold text-foreground mt-0.5">
             {universe.dataUpdatedAt ? `${formatDistanceToNowStrict(universe.dataUpdatedAt)} ago` : '—'}
@@ -253,14 +253,14 @@ export default function MarketsExplorer() {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="surface overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-muted/30">
           <span className="text-xs text-muted-foreground mr-1">Sort</span>
           {SORTS.map(s => (
             <button
               key={s.id}
               onClick={() => setSort(s.id)}
-              className={cn('px-2 py-0.5 rounded text-[11px] font-medium transition-all', sort === s.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+              className={cn('pressable px-2 py-0.5 rounded-sm text-[11px] font-medium', sort === s.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
             >
               {s.label}
             </button>

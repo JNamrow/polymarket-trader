@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { formatUsd, formatCents, LEADERBOARD_CATEGORIES } from '@/api/polymarket';
 import { useLeaderboard, useSmartMoney } from '@/lib/useTraders';
-import { TraderLink, Pnl, Chip, Segmented, LeanBar, Spinner, ErrorState, EmptyState, marketUrl } from './shared';
+import { TraderLink, Pnl, Chip, Segmented, LeanBar, SkeletonRows, ErrorState, EmptyState, marketUrl } from './shared';
 
 const WINDOWS = [
   { id: '1d', label: '24h' },
@@ -44,14 +44,14 @@ function Leaderboard({ window, orderBy, category, following }) {
   const rows = board.data || [];
   const windowLabel = WINDOWS.find(w => w.id === window)?.label;
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
+    <div className="surface overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/30">
         <Trophy className="w-3.5 h-3.5 text-yellow-400" />
         <span className="text-xs font-medium text-foreground">Top traders · {windowLabel}</span>
         <span className="ml-auto text-[10px] text-muted-foreground uppercase tracking-wider">{orderBy === 'PNL' ? 'P&L' : 'Volume'}</span>
       </div>
       {board.isLoading ? (
-        <Spinner />
+        <SkeletonRows rows={10} />
       ) : board.error ? (
         <ErrorState error={board.error} hint="The Data API rate-limits bursts. Try again in a minute." />
       ) : rows.length === 0 ? (
@@ -79,7 +79,7 @@ function SmartPositions({ window, category, top, tradersByAddress }) {
   const smart = useSmartMoney({ window, category, top });
   const rows = smart.rows;
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
+    <div className="surface overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/30">
         <Target className="w-3.5 h-3.5 text-primary" />
         <span className="text-xs font-medium text-foreground">Where the top {top} sit right now</span>
@@ -88,7 +88,7 @@ function SmartPositions({ window, category, top, tradersByAddress }) {
         </span>
       </div>
       {smart.isLoading || (smart.total > 0 && smart.loaded === 0) ? (
-        <Spinner />
+        <SkeletonRows rows={8} />
       ) : rows.length === 0 ? (
         <EmptyState title="No shared markets yet" text="Markets show up here once two or more of these traders hold them." />
       ) : (

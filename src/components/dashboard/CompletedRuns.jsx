@@ -54,7 +54,7 @@ export default function CompletedRuns({ runs, trades }) {
 
   if (runs.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-xl p-6">
+      <div className="surface p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-foreground">Completed Runs</h3>
           <History className="w-4 h-4 text-muted-foreground" />
@@ -68,7 +68,7 @@ export default function CompletedRuns({ runs, trades }) {
 
   return (
     <>
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="surface overflow-hidden">
         <div className="flex items-center justify-between p-4 lg:p-5 border-b border-border">
           <h3 className="text-sm font-medium text-foreground">Completed Runs</h3>
           <span className={cn('text-sm font-mono font-semibold', isPositive ? 'text-primary' : 'text-destructive')}>

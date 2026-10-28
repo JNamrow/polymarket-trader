@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     darkMode: ["class"],
+    future: { hoverOnlyWhenSupported: true },
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
   	extend: {
@@ -83,6 +84,11 @@ module.exports = {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			'pulse-glow': 'pulse-glow 2s ease-in-out infinite'
+  		},
+  		transitionTimingFunction: {
+  			'out-strong': 'cubic-bezier(0.23, 1, 0.32, 1)',
+  			drawer: 'cubic-bezier(0.32, 0.72, 0, 1)',
+  			ui: 'cubic-bezier(0.2, 0, 0, 1)'
   		}
   	}
   },

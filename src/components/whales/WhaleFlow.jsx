@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { formatUsd, formatCents, CATEGORY_LABELS } from '@/api/polymarket';
 import { isContrarian } from '@/engine/wallets.js';
-import { TraderLink, SideBadge, CategoryBadge, FlagList, Chip, Segmented, Tile, Spinner, ErrorState, EmptyState, shortAgo, marketUrl } from './shared';
+import { TraderLink, SideBadge, CategoryBadge, FlagList, Chip, Segmented, Tile, SkeletonRows, ErrorState, EmptyState, shortAgo, marketUrl } from './shared';
 
 export const FEED_SIZES = [1000, 5000, 10_000, 25_000, 100_000];
 const SIDES = [
@@ -17,7 +17,7 @@ const CATEGORY_FILTERS = ['all', 'politics', 'sports', 'crypto', 'business', 'te
 function FillRow({ t, signals, category, followed }) {
   const contrarian = isContrarian(t);
   return (
-    <div className={cn('flex items-center gap-3 px-4 py-2.5 border-b border-border/60 last:border-b-0 text-xs hover:bg-secondary/30', signals?.suspicious && 'bg-rose-500/5')}>
+    <div className={cn('flex items-center gap-3 px-4 py-2.5 border-b border-border/60 last:border-b-0 text-xs hover:bg-secondary/30 transition-colors duration-100', signals?.suspicious && 'bg-rose-500/5')}>
       <span className="font-mono text-[10px] text-muted-foreground w-8 flex-shrink-0" title={new Date(t.timestamp).toLocaleString()}>
         {shortAgo(t.timestamp)}
       </span>
@@ -25,7 +25,9 @@ function FillRow({ t, signals, category, followed }) {
         <TraderLink address={t.wallet} name={t.name} profileImage={t.profileImage} size="sm" className="text-xs w-full" />
         {followed && <span className="block text-[10px] text-yellow-400 pl-8">following</span>}
       </div>
-      <SideBadge side={t.side} outcome={t.outcome} className="flex-shrink-0 hidden sm:inline-flex" />
+      <span className="w-24 flex-shrink-0 hidden sm:flex">
+        <SideBadge side={t.side} outcome={t.outcome} className="max-w-full truncate" />
+      </span>
       <div className="flex-1 min-w-0">
         <a href={marketUrl(t.eventSlug)} target="_blank" rel="noreferrer" className="text-foreground/90 truncate block hover:underline" title={t.title}>
           {t.title}
@@ -120,30 +122,29 @@ export default function WhaleFlow({ trades, signalsById, categories, pendingStat
         <Tile label="Wallets checked" value={`${Math.max(0, totalWallets - pendingStats)}/${totalWallets}`} sub={pendingStats > 0 ? 'loading stats…' : 'stats loaded'} />
       </div>
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="hidden lg:flex items-center gap-3 px-4 py-2 border-b border-border bg-muted/30 text-[10px] uppercase tracking-wider text-muted-foreground">
-          <span className="w-8">Age</span>
-          <span className="w-44">Trader</span>
-          <span className="w-[88px]">Side</span>
-          <span className="flex-1">Market</span>
-          <span className="w-10 text-right">Price</span>
-          <span className="w-16 text-right">Shares</span>
-          <span className="w-16 text-right">Size</span>
-          <span className="w-44 text-right">Signals</span>
-        </div>
-        {feed.isLoading ? (
-          <Spinner />
-        ) : feed.error ? (
-          <ErrorState error={feed.error} hint="The Data API rate-limits bursts. It retries on the next refresh." />
-        ) : rows.length === 0 ? (
-          <EmptyState icon={Waves} title="No fills match" text="Lower the minimum size or clear a filter." />
-        ) : (
-          <div className="max-h-[70vh] overflow-y-auto">
-            {rows.map(t => (
-              <FillRow key={t.id} t={t} signals={signalsById[t.id]} category={categories[t.conditionId]} followed={following.set.has(t.wallet)} />
-            ))}
+      <div className="surface overflow-hidden">
+        <div className="max-h-[70vh] overflow-y-auto overscroll-contain">
+          {/* Column headers stay pinned while the list scrolls. Widths and breakpoints mirror FillRow. */}
+          <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-2 border-b border-border bg-card text-[10px] uppercase tracking-wider text-muted-foreground">
+            <span className="w-8 flex-shrink-0">Age</span>
+            <span className="w-36 sm:w-44 flex-shrink-0">Trader</span>
+            <span className="w-24 flex-shrink-0 hidden sm:block">Side</span>
+            <span className="flex-1 min-w-0">Market</span>
+            <span className="w-10 text-right flex-shrink-0">Price</span>
+            <span className="w-16 text-right flex-shrink-0 hidden md:block">Shares</span>
+            <span className="w-16 text-right flex-shrink-0">Size</span>
+            <span className="w-44 text-right flex-shrink-0 hidden lg:block">Signals</span>
           </div>
-        )}
+          {feed.isLoading ? (
+            <SkeletonRows rows={8} />
+          ) : feed.error ? (
+            <ErrorState error={feed.error} hint="The Data API rate-limits bursts. It retries on the next refresh." />
+          ) : rows.length === 0 ? (
+            <EmptyState icon={Waves} title="No fills match" text="Lower the minimum size or clear a filter." />
+          ) : (
+            rows.map(t => <FillRow key={t.id} t={t} signals={signalsById[t.id]} category={categories[t.conditionId]} followed={following.set.has(t.wallet)} />)
+          )}
+        </div>
       </div>
     </div>
   );

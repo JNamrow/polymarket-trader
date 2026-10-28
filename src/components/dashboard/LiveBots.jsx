@@ -51,7 +51,7 @@ export default function LiveBots({ bots, trades = [], onPause, onStop, onResume,
 
   if (bots.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-xl p-6">
+      <div className="surface p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-foreground">Running portfolios</h3>
           <Zap className="w-4 h-4 text-muted-foreground" />
@@ -70,7 +70,7 @@ export default function LiveBots({ bots, trades = [], onPause, onStop, onResume,
   const selected = selectedBot ? bots.find(b => b.id === selectedBot.id) || selectedBot : null;
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 lg:p-5">
+    <div className="surface p-4 lg:p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-foreground">Running portfolios</h3>
         <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 text-xs">
@@ -89,13 +89,13 @@ export default function LiveBots({ bots, trades = [], onPause, onStop, onResume,
           return (
             <div
               key={bot.id}
-              className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer"
+              className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors duration-100 cursor-pointer"
               onClick={() => setSelectedBot(bot)}
             >
               <div
                 className={cn(
                   'w-2 h-2 rounded-full flex-shrink-0',
-                  bot.last_error ? 'bg-destructive' : bot.status === 'running' ? 'bg-primary animate-pulse-glow' : 'bg-yellow-500'
+                  bot.last_error ? 'bg-destructive' : bot.status === 'running' ? 'bg-primary motion-safe:animate-pulse-glow' : 'bg-yellow-500'
                 )}
                 title={bot.last_error || bot.status}
               />

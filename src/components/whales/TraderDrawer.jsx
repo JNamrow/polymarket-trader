@@ -32,7 +32,7 @@ export function TraderDrawerProvider({ children }) {
           if (!isOpen) close();
         }}
       >
-        <SheetContent side="right" className="w-full sm:max-w-2xl p-0 overflow-y-auto bg-card border-border">
+        <SheetContent side="right" className="w-full sm:max-w-2xl p-0 overflow-y-auto overscroll-contain bg-card border-border">
           {current && <TraderProfile key={current.address} address={current.address} seed={current.seed} onClose={close} />}
         </SheetContent>
       </Sheet>
@@ -90,6 +90,19 @@ function PnlChart({ address, range }) {
   );
 }
 
+/** Pinned column labels for the small tables in the drawer. */
+function TableHead({ cols }) {
+  return (
+    <div className="sticky top-0 z-10 flex items-center gap-2 py-1.5 bg-card text-[10px] uppercase tracking-wider text-muted-foreground">
+      {cols.map(([cls, label]) => (
+        <span key={label} className={cn('flex-shrink-0', cls)}>
+          {label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function OutcomeTag({ outcome, index }) {
   const yes = index === 0;
   return (
@@ -115,7 +128,8 @@ function PositionsTable({ rows, loading, error }) {
           <Pnl value={pnl} /> unrealized
         </span>
       </div>
-      <div className="divide-y divide-border/50 max-h-80 overflow-y-auto -mx-1 px-1">
+      <div className="divide-y divide-border/50 max-h-80 overflow-y-auto overscroll-contain -mx-1 px-1">
+        <TableHead cols={[['w-14', 'Side'], ['flex-1', 'Market'], ['hidden sm:block', 'Entry→Mark'], ['w-14 text-right', 'Value'], ['w-16 text-right', 'P&L']]} />
         {rows.map(p => (
           <div key={`${p.conditionId}-${p.outcomeIndex}`} className="py-2 flex items-center gap-2 text-xs">
             <OutcomeTag outcome={p.outcome} index={p.outcomeIndex} />
@@ -142,7 +156,8 @@ function ClosedTable({ rows, loading, error }) {
   if (!rows?.length) return <p className="py-8 text-center text-xs text-muted-foreground">No settled positions yet</p>;
   const sorted = [...rows].sort((a, b) => b.realizedPnl - a.realizedPnl);
   return (
-    <div className="divide-y divide-border/50 max-h-80 overflow-y-auto -mx-1 px-1">
+    <div className="divide-y divide-border/50 max-h-80 overflow-y-auto overscroll-contain -mx-1 px-1">
+      <TableHead cols={[['w-14', 'Side'], ['flex-1', 'Market · entry · settled'], ['w-12 text-right hidden sm:block', 'Return'], ['w-16 text-right', 'P&L']]} />
       {sorted.slice(0, 100).map(p => (
         <div key={`${p.conditionId}-${p.outcomeIndex}`} className="py-2 flex items-center gap-2 text-xs">
           <OutcomeTag outcome={p.outcome} index={p.outcomeIndex} />
@@ -175,7 +190,8 @@ function ActivityList({ address }) {
   const rows = activity.data || [];
   if (!rows.length) return <p className="py-8 text-center text-xs text-muted-foreground">No activity</p>;
   return (
-    <div className="divide-y divide-border/50 max-h-80 overflow-y-auto -mx-1 px-1">
+    <div className="divide-y divide-border/50 max-h-80 overflow-y-auto overscroll-contain -mx-1 px-1">
+      <TableHead cols={[['w-8', 'Age'], ['w-20', 'Action'], ['flex-1', 'Market'], ['hidden sm:block', 'Price'], ['w-16 text-right', 'Size']]} />
       {rows.map(a => (
         <div key={a.id} className="py-2 flex items-center gap-2 text-xs">
           <span className="font-mono text-[10px] text-muted-foreground w-8 flex-shrink-0">{shortAgo(a.timestamp)}</span>

@@ -44,7 +44,7 @@ export default function WhalesTab() {
               key={id}
               type="button"
               onClick={() => setView(id)}
-              className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all', view === id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+              className={cn('pressable flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium', view === id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
             >
               <Icon className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{label}</span>

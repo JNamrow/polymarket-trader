@@ -29,7 +29,7 @@ function CandidateRow({ wallet, selected, onToggle, sub }) {
     <button
       type="button"
       onClick={() => onToggle(wallet)}
-      className={cn('w-full flex items-center gap-3 px-3 py-2 text-left text-xs rounded-lg border transition-all', selected ? 'border-primary/50 bg-primary/5' : 'border-transparent hover:bg-secondary/50')}
+      className={cn('w-full flex items-center gap-3 px-3 py-2 text-left text-xs rounded-lg border transition-[color,background-color,border-color,box-shadow] duration-150 ease-out', selected ? 'border-primary/50 bg-primary/5' : 'border-transparent hover:bg-secondary/50')}
     >
       <TraderAvatar src={wallet.profileImage} address={wallet.address} size="sm" />
       <div className="flex-1 min-w-0">
@@ -159,7 +159,7 @@ export default function PilotPicker({ selected = [], onChange, fund = 0, isPaper
                   key={id}
                   type="button"
                   onClick={() => onCopyMode?.(id)}
-                  className={cn('text-left p-3 rounded-xl border transition-all', copyMode === id ? 'border-primary/50 bg-primary/5' : 'border-border bg-card hover:bg-secondary/40')}
+                  className={cn('text-left p-3 rounded-xl border transition-[color,background-color,border-color,box-shadow] duration-150 ease-out', copyMode === id ? 'border-primary/50 bg-primary/5' : 'border-border bg-card hover:bg-secondary/40')}
                 >
                   <p className={cn('text-sm font-medium', copyMode === id ? 'text-primary' : 'text-foreground')}>{title}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{text}</p>

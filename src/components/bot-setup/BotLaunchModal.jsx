@@ -233,7 +233,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto bg-card border-border p-0">
+      <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto overscroll-contain bg-card border-border p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
           <div className="flex items-center gap-3">
             <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', isPaper ? 'bg-violet-500/10' : 'bg-primary/10')}>
@@ -278,7 +278,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                         key={id}
                         type="button"
                         onClick={() => setIsPaper(id === 'paper')}
-                        className={cn('text-left p-3 rounded-xl border transition-all', active ? (id === 'paper' ? 'border-violet-500/50 bg-violet-500/5' : 'border-primary/50 bg-primary/5') : 'border-border bg-background hover:bg-secondary/40')}
+                        className={cn('text-left p-3 rounded-xl border transition-[color,background-color,border-color,box-shadow] duration-150 ease-out', active ? (id === 'paper' ? 'border-violet-500/50 bg-violet-500/5' : 'border-primary/50 bg-primary/5') : 'border-border bg-background hover:bg-secondary/40')}
                       >
                         <p className={cn('text-sm font-medium flex items-center gap-1.5', active ? (id === 'paper' ? 'text-violet-300' : 'text-primary') : 'text-foreground')}>
                           <Icon className="w-3.5 h-3.5" /> {title}
@@ -312,7 +312,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                       type="button"
                       onClick={() => setFund(amt)}
                       className={cn(
-                        'px-3 py-1 rounded-md text-xs font-mono border transition-all',
+                        'pressable px-3 py-1 rounded-md text-xs font-mono border',
                         fund === amt ? (isPaper ? 'border-violet-500/50 bg-violet-500/10 text-violet-400' : 'border-primary/50 bg-primary/10 text-primary') : 'border-border bg-background text-muted-foreground hover:text-foreground'
                       )}
                     >
@@ -349,7 +349,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                     key={id}
                     type="button"
                     onClick={() => setKind(id)}
-                    className={cn('text-left p-4 rounded-xl border transition-all', kind === id ? 'border-primary/50 bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-background hover:bg-secondary/40')}
+                    className={cn('text-left p-4 rounded-xl border transition-[color,background-color,border-color,box-shadow] duration-150 ease-out', kind === id ? 'border-primary/50 bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-background hover:bg-secondary/40')}
                   >
                     <p className={cn('text-sm font-medium flex items-center gap-2', kind === id ? 'text-primary' : 'text-foreground')}>
                       <Icon className="w-4 h-4" /> {title}
@@ -451,7 +451,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                               key={value}
                               type="button"
                               onClick={() => setKellyFraction(value)}
-                              className={cn('px-2 py-2 rounded-lg text-xs font-mono border transition-all', kellyFraction === value ? 'border-primary/50 bg-primary/10 text-primary' : 'border-border bg-background text-muted-foreground hover:text-foreground')}
+                              className={cn('pressable px-2 py-2 rounded-lg text-xs font-mono border', kellyFraction === value ? 'border-primary/50 bg-primary/10 text-primary' : 'border-border bg-background text-muted-foreground hover:text-foreground')}
                             >
                               {label}
                             </button>
@@ -466,7 +466,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                               type="button"
                               onClick={() => setOrderType(value)}
                               title={desc}
-                              className={cn('px-2 py-2 rounded-lg text-xs font-mono border transition-all', orderType === value ? 'border-primary/50 bg-primary/10 text-primary' : 'border-border bg-background text-muted-foreground hover:text-foreground')}
+                              className={cn('pressable px-2 py-2 rounded-lg text-xs font-mono border', orderType === value ? 'border-primary/50 bg-primary/10 text-primary' : 'border-border bg-background text-muted-foreground hover:text-foreground')}
                             >
                               {value}
                             </button>

@@ -64,7 +64,7 @@ export default function PnlChart({ botRuns }) {
   const stroke = isPositive ? 'hsl(142,71%,45%)' : 'hsl(0,72%,51%)';
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 lg:p-5">
+    <div className="surface p-4 lg:p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-foreground">P&L Over Time</h3>
         <div className="flex items-center gap-2">
@@ -74,7 +74,7 @@ export default function PnlChart({ botRuns }) {
                 key={f.id}
                 onClick={() => setFilter(f.id)}
                 className={cn(
-                  'px-2 py-0.5 rounded text-[10px] font-medium transition-all',
+                  'px-2 py-0.5 rounded text-[10px] font-medium transition-[color,background-color,border-color,box-shadow] duration-150 ease-out',
                   filter === f.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 )}
               >

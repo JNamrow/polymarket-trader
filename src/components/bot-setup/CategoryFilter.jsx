@@ -33,7 +33,7 @@ export default function CategoryFilter({ selected, onToggle }) {
               key={id}
               onClick={() => handleToggle(id)}
               className={cn(
-                'px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all duration-200',
+                'pressable px-3.5 py-1.5 rounded-full text-xs font-medium border',
                 isSelected ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-border'
               )}
             >
