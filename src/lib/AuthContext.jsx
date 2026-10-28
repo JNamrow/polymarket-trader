@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44, signIn } from '@/api/base44Client';
+import { base44, enableDemoMode, signIn } from '@/api/base44Client';
+import { seedDemo } from '@/lib/demoSeed';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
 
@@ -12,9 +13,17 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
-  // No token, an expired token, or auth_required: resolve as signed out so the
-  // router's ProtectedRoute sends the visitor to the /login page.
-  const clearSession = () => {
+  const [isDemo, setIsDemo] = useState(false);
+
+  // Demo mode: a visitor without an account gets a sandbox in their own browser.
+  const enterDemo = async () => {
+    enableDemoMode();
+    try {
+      await seedDemo(base44);
+    } catch (err) {
+      console.warn('Demo seed skipped:', err?.message || err);
+    }
+    setIsDemo(true);
     setUser(null);
     setIsAuthenticated(false);
     setAuthError(null);
@@ -51,7 +60,7 @@ export const AuthProvider = ({ children }) => {
           await checkUserAuth();
           setIsLoadingPublicSettings(false);
         } else {
-          clearSession();
+          await enterDemo();
         }
       } catch (appError) {
         console.error('App state check failed:', appError);
@@ -66,8 +75,8 @@ export const AuthProvider = ({ children }) => {
           setIsLoadingPublicSettings(false);
           setIsLoadingAuth(false);
         } else {
-          // auth_required, a missing token, or an unreachable backend: signed out.
-          clearSession();
+          // auth_required, a missing token, or an unreachable backend all lead to the demo.
+          await enterDemo();
         }
       }
     } catch (error) {
@@ -94,9 +103,9 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       
-      // An expired or invalid token is treated like no token: signed out.
+      // An expired or invalid token is treated like no token: demo mode, with Sign in in the banner.
       if (error.status === 401 || error.status === 403) {
-        clearSession();
+        await enterDemo();
       }
     }
   };
@@ -127,7 +136,7 @@ export const AuthProvider = ({ children }) => {
       isLoadingPublicSettings,
       authError,
       appPublicSettings,
-      isDemo: false,
+      isDemo,
       logout,
       navigateToLogin,
       checkAppState

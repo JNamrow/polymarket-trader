@@ -34,9 +34,9 @@ export function isDemoMode() {
   return demo;
 }
 
-/** Send the visitor to Base44's login, even from demo mode. */
+/** The owner's sign-in page (nothing in the demo links to it). */
 export function signIn() {
-  remoteClient.auth.redirectToLogin(window.location.href);
+  window.location.assign('/login');
 }
 
 export const base44 = new Proxy(
