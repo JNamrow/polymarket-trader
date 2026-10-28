@@ -229,16 +229,13 @@ The public demo needs no Base44. It is a static build on Vercel's free plan plus
 
 **How it is wired.** `VITE_APP_MODE=demo` makes `src/api/base44Client.js` skip Base44 entirely and use `src/api/sandboxClient.js` (Supabase, anon key, row-level security: read, create and update only) or `src/api/localClient.js`. In the shared sandbox the browser does not run the one-minute engine loop; the `demo-tick` function does, every 5 minutes, and the dashboard refreshes every 30 seconds. The "tick now", launch and stop actions still run the engine in the browser so changes show up at once.
 
-## Base44 and GitHub sync
+## Base44 (optional backend)
 
-The app is connected to this repository with Base44's two-way GitHub sync:
+This repository is no longer synced with a Base44 app. The free demo runs on Vercel and Supabase (see above). Base44 is still a supported backend for a private copy with saved data and server-side ticks:
 
-- Edits made inside the Base44 builder are committed to `main`.
-- Commits pushed to `main` are pulled into the Base44 app within about a minute (a push webhook tells Base44). Click **Publish** in Base44 to make them live for users.
-- Only the `main` branch syncs. Work on branches, then merge to `main`.
-- Entity schema changes in `base44/entities` deploy on sync. Backend functions and their schedules deploy with `npx base44 deploy`. The local `function.jsonc` files are the source of truth. Changes made in the Base44 dashboard are overwritten on the next deploy.
-- With a *per user* GitHub connection (Workspace settings, then GitHub), builder commits show under your own GitHub account instead of Base44's bot.
-- For the public demo, the app must allow visitors without an account (Base44 app settings) and keep sign-up invite-only. The owner gets the full app; everyone else gets demo mode.
+- `npx base44 link` ties a clone to your own Base44 app. `npx base44 deploy` pushes the entity schemas in `base44/entities` and both scheduled functions. The local `function.jsonc` files are the source of truth. Changes made in the Base44 dashboard are overwritten on the next deploy.
+- Base44 can sync a repository both ways (edits in the builder become commits, pushes to `main` reach the app). Turn it on from the app's Code page in Base44 if you want it. Only `main` syncs.
+- For a public demo on Base44, the app must allow visitors without an account (App Visibility) and keep sign-up invite-only. The owner gets the full app; everyone else gets demo mode.
 
 ## Contributing
 
