@@ -4,8 +4,8 @@
  * which is the only tree Base44's preview sandbox serves). Server code can
  * only import from its own tree, so exact copies are kept at:
  *   base44/shared/engine                 for base44/functions/*  (Base44, Deno)
- *   supabase/functions/demo-tick/engine  and
- *   supabase/functions/demo-whales/engine (Supabase Edge Functions, Deno; each deploy uploads one folder)
+ *   supabase/functions/demo-tick/engine, demo-whales/engine and
+ *   demo-wallets/engine                  (Supabase Edge Functions, Deno; each deploy uploads one folder)
  *
  *   node scripts/sync-engine.mjs          copy src/engine → both mirrors
  *   node scripts/sync-engine.mjs --check  exit 1 if a mirror differs
@@ -20,6 +20,7 @@ const DESTS = [
   join(root, 'base44', 'shared', 'engine'),
   join(root, 'supabase', 'functions', 'demo-tick', 'engine'),
   join(root, 'supabase', 'functions', 'demo-whales', 'engine'),
+  join(root, 'supabase', 'functions', 'demo-wallets', 'engine'),
 ];
 const check = process.argv.includes('--check');
 

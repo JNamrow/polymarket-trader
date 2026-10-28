@@ -206,6 +206,60 @@ export function insiderSignals({ trade, stats = null, portfolioValue = null }, o
 }
 
 /**
+ * Insider flags for a wallet-registry row (public.wallets in the shared
+ * sandbox). Same point table as insiderSignals, applied to what the registry
+ * has seen from the wallet so far instead of to one fill:
+ *   fresh_account  joined ≤ 30 days ago (45 pts if ≤ 7 days, else 35)
+ *   few_markets    ≤ 3 markets ever traded (20)
+ *   concentrated   at least one buy worth ≥ 50% of the portfolio (20)
+ *   long_shot      at least one buy at ≤ 30¢ (15)
+ *   big_size       biggest fill ≥ $25k (10) or ≥ $100k (15)
+ * `suspicious` = fresh account plus at least one conviction signal.
+ */
+export function registryFlags(row = {}, opts = {}) {
+  const o = { ...WHALE_DEFAULTS, ...opts };
+  const flags = [];
+  let score = 0;
+  const add = (id, pts, detail) => {
+    flags.push({ id, label: FLAG_LABELS[id], pts, detail });
+    score += pts;
+  };
+  const days = row.wallet_age_days ?? (row.joined_at ? ageDays(Date.parse(row.joined_at), o.now) : null);
+  if (days != null && days <= o.freshAccountDays) add('fresh_account', days <= 7 ? 45 : 35, days < 1 ? 'joined today' : `${Math.round(days)}d old`);
+  const markets = Number(row.markets_traded || 0);
+  if (markets > 0 && markets <= o.fewMarkets) add('few_markets', 20, `${markets} market${markets === 1 ? '' : 's'} ever`);
+  if (row.concentrated_fills > 0) add('concentrated', 20, `${row.concentrated_fills} buy${row.concentrated_fills === 1 ? '' : 's'} ≥ ${Math.round(o.concentratedShare * 100)}% of the portfolio`);
+  if (row.long_shot_fills > 0) add('long_shot', 15, `${row.long_shot_fills} buy${row.long_shot_fills === 1 ? '' : 's'} at ≤ ${Math.round(o.longShotPrice * 100)}¢`);
+  const max = Number(row.max_fill_usd || 0);
+  if (max >= 100_000) add('big_size', 15, '≥ $100k');
+  else if (max >= 25_000) add('big_size', 10, '≥ $25k');
+  const fresh = flags.some(f => f.id === 'fresh_account');
+  const conviction = flags.some(f => f.id === 'concentrated' || f.id === 'long_shot' || f.id === 'big_size');
+  return { flags, score: Math.min(100, score), suspicious: fresh && conviction };
+}
+
+/** The stats object fetchUserStats() returns, rebuilt from a registry row (null when the row was never checked). */
+export function statsFromRegistry(row) {
+  if (!row || !row.last_checked_at) return null;
+  return {
+    address: row.address,
+    joinedAt: row.joined_at ? Date.parse(row.joined_at) : null,
+    marketsTraded: Number(row.markets_traded || 0),
+    tradeCount: Number(row.trade_count || 0),
+    biggestWin: Number(row.biggest_win || 0),
+    realizedPnl: Number(row.realized_pnl || 0),
+    unrealizedPnl: Number(row.unrealized_pnl || 0),
+    totalPnl: Number(row.total_pnl || 0),
+    tradePnl: Number(row.trade_pnl ?? row.total_pnl ?? 0),
+    walletIncome: 0,
+    volume: Number(row.volume || 0),
+    volumeTotal: Number(row.volume_total ?? row.volume ?? 0),
+    feesPaid: Number(row.fees_paid || 0),
+    views: 0,
+  };
+}
+
+/**
  * Where the biggest holders sit versus the price. `holders` is fetchHolders()
  * output; `yesPrice` the market's YES price. Each side's top holders are
  * dollar-weighted and the YES share is compared with the price the crowd

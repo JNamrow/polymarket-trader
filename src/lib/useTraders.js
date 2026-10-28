@@ -21,6 +21,7 @@ import {
   createLimiter,
 } from '@/api/polymarket';
 import { insiderSignals, traderScore, concentration, categoryFromTags, aggregateSmartMoney, holdersLean } from '@/engine/wallets.js';
+import { useRegistrySeed } from '@/lib/useRegistry';
 
 export const dataApiGate = createLimiter(4);
 const gated = fn => () => dataApiGate(fn);
@@ -29,6 +30,7 @@ const MINUTE = 60_000;
 const STATS_STALE = 15 * MINUTE;
 
 const queryKeyOf = queries => queries.map(q => q.dataUpdatedAt || (q.isError ? 'err' : 0)).join(',');
+const EMPTY = [];
 
 // ─── Feed ─────────────────────────────────────────────────────────────────────
 
@@ -44,11 +46,17 @@ export function useWhaleFeed({ minUsd = 10_000, side = null, limit = 100, refetc
   });
 }
 
-/** Lifetime stats and portfolio value for many wallets at once (feed enrichment). */
-export function useWalletEnrichment(addresses = []) {
+/**
+ * Lifetime stats and portfolio value for many wallets at once (feed enrichment).
+ * With `wait` the queries are not mounted yet: useFeedSignals waits for the
+ * wallet registry to seed the cache first, so wallets the server already
+ * checked cost no Data API call.
+ */
+export function useWalletEnrichment(addresses = [], { wait = false } = {}) {
   const unique = useMemo(() => [...new Set(addresses.filter(Boolean))], [addresses]);
+  const list = wait ? EMPTY : unique;
   const statsQueries = useQueries({
-    queries: unique.map(address => ({
+    queries: list.map(address => ({
       queryKey: ['trader-stats', address],
       queryFn: gated(() => fetchUserStats(address)),
       staleTime: STATS_STALE,
@@ -56,7 +64,7 @@ export function useWalletEnrichment(addresses = []) {
     })),
   });
   const valueQueries = useQueries({
-    queries: unique.map(address => ({
+    queries: list.map(address => ({
       queryKey: ['trader-value', address],
       queryFn: gated(() => fetchPortfolioValue(address)),
       staleTime: 5 * MINUTE,
@@ -69,8 +77,8 @@ export function useWalletEnrichment(addresses = []) {
     const statsByWallet = {};
     const valueByWallet = {};
     const settled = new Set();
-    let pending = 0;
-    unique.forEach((address, i) => {
+    let pending = wait ? unique.length : 0;
+    list.forEach((address, i) => {
       const s = statsQueries[i];
       const v = valueQueries[i];
       if (s.data) statsByWallet[address] = s.data;
@@ -80,13 +88,14 @@ export function useWalletEnrichment(addresses = []) {
     });
     return { statsByWallet, valueByWallet, settled, pending, total: unique.length };
     // statsKey / valueKey change whenever any query resolves, which is when this must recompute.
-  }, [unique, statsKey, valueKey]);
+  }, [unique, list, wait, statsKey, valueKey]);
 }
 
 /** Potential-insider signals for every fill in a feed, filled in as wallet stats arrive. */
 export function useFeedSignals(trades = []) {
   const addresses = useMemo(() => trades.map(t => t.wallet), [trades]);
-  const enrichment = useWalletEnrichment(addresses);
+  const seed = useRegistrySeed(addresses);
+  const enrichment = useWalletEnrichment(addresses, { wait: !seed.ready });
   const signalsById = useMemo(() => {
     const out = {};
     for (const t of trades) {

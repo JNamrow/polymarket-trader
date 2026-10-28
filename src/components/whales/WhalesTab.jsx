@@ -1,15 +1,17 @@
 /**
- * Whales tab: live whale flow, insider scan, smart money and followed wallets.
+ * Whales tab: live whale flow, the wallet registry, insider scan, smart money and followed wallets.
  * Modelled on prediction-market trackers such as Unusual Whales' "Unusual
  * Predictions", built only on Polymarket's public Data API.
  */
 import React, { useMemo, useState } from 'react';
-import { Waves, Radar, Target, Star } from 'lucide-react';
+import { Waves, Radar, Target, Star, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useWhaleFeed, useFeedSignals, useMarketCategories } from '@/lib/useTraders';
+import { useRegistryStats, registryAvailable } from '@/lib/useRegistry';
 import { useFollowing } from '@/lib/useFollowing';
 import { useWhaleAlerts } from '@/lib/useWhaleAlerts';
 import WhaleFlow from './WhaleFlow';
+import WalletRegistry from './WalletRegistry';
 import InsiderScan from './InsiderScan';
 import SmartMoney from './SmartMoney';
 import Following from './Following';
@@ -17,6 +19,7 @@ import AlertsMenu from './AlertsMenu';
 
 const VIEWS = [
   { id: 'flow', label: 'Whale flow', icon: Waves },
+  { id: 'wallets', label: 'Wallets', icon: Users },
   { id: 'smart', label: 'Smart money', icon: Target },
   { id: 'insiders', label: 'Insider scan', icon: Radar },
   { id: 'following', label: 'Following', icon: Star },
@@ -33,6 +36,7 @@ export default function WhalesTab() {
   const conditionIds = useMemo(() => trades.map(t => t.conditionId), [trades]);
   const categories = useMarketCategories(conditionIds);
   const following = useFollowing();
+  const registry = useRegistryStats({ enabled: registryAvailable() });
   const alerts = useWhaleAlerts({ trades, signalsById, followed: following.set, prefs: following.prefs, enabled: following.ready });
 
   return (
@@ -74,8 +78,10 @@ export default function WhalesTab() {
           onSide={setSide}
           feed={feed}
           following={following}
+          registryTotal={registry.data?.total}
         />
       )}
+      {view === 'wallets' && <WalletRegistry following={following} />}
       {view === 'insiders' && <InsiderScan trades={trades} signalsById={signalsById} pendingStats={pending} totalWallets={total} minUsd={minUsd} />}
       {view === 'smart' && <SmartMoney following={following} />}
       {view === 'following' && <Following following={following} />}

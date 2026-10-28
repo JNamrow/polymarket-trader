@@ -44,4 +44,8 @@ select cron.schedule('demo-whales', '2-59/5 * * * *', $$select public.invoke_dem
 select cron.unschedule('demo-reset') where exists (select 1 from cron.job where jobname = 'demo-reset');
 select cron.schedule('demo-reset', '0 */2 * * *', $$select public.demo_reset(); select public.invoke_demo_function('demo-tick')$$);
 
+-- Grow the wallet registry every 5 minutes (offset by 4 minutes from the tick).
+select cron.unschedule('demo-wallets') where exists (select 1 from cron.job where jobname = 'demo-wallets');
+select cron.schedule('demo-wallets', '4-59/5 * * * *', $$select public.invoke_demo_function('demo-wallets')$$);
+
 -- Check: select jobname, schedule, active from cron.job;

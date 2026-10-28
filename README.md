@@ -93,6 +93,8 @@ All of this is computed in `src/engine/wallets.js` from public data. Nothing is 
 
 **Against the crowd.** A BUY at 30¢ or less, or a SELL at 70¢ or more.
 
+**Wallet registry.** The live feed only sees the wallets behind the newest 100 big fills. The hosted demo's server goes much wider: every 5 minutes it reads every Polymarket fill of $1,000 or more, keeps one row per wallet (public stats, the last 100 settled positions, the open book, score and flags), checks new wallets as they appear and refreshes old rows daily. The Wallets tab lists them all, sorted by score, P&L, volume, fills seen, latest fill or suspicion, with filters for category, fresh accounts and "second look". The feed reads wallet stats from this registry too, so most wallets cost the browser no extra API call. Code: `supabase/functions/demo-wallets` and `registryFlags()` in `src/engine/wallets.js`.
+
 ## Live execution status
 
 | Piece | Status |
@@ -217,15 +219,15 @@ npx base44 dev        # local backend + Vite dev server
 The public demo needs no Base44. It is a static build on Vercel's free plan plus a small Supabase project (free plan) that holds one shared sandbox. Total cost: zero.
 
 **1. Supabase (the shared sandbox).**
-- Create a project at supabase.com. In the SQL editor, run `supabase/migrations/20261028000000_demo_sandbox.sql`. It creates the tables, the guard rails (20 portfolios max, paper money only) and the `demo_reset()` function. Regenerate it with `npm run supabase:schema` after changing an entity.
-- Deploy the two Edge Functions: `npx supabase login`, `npx supabase link --project-ref <ref>`, `npx supabase functions deploy demo-tick demo-whales --no-verify-jwt`. Each function folder carries its own copy of the engine (kept in sync by `npm run engine:sync`).
-- Run `supabase/cron.sql` in the SQL editor after replacing `<PROJECT_REF>`. It generates a random token (kept in Vault and in a server-only table; nothing to paste), then schedules the tick every 5 minutes, the whale scan every 5 minutes, and the reset every 2 hours. The tick seeds two sample portfolios whenever the sandbox is empty, so visitors never see a blank screen.
+- Create a project at supabase.com. In the SQL editor, run `supabase/migrations/20261028000000_demo_sandbox.sql`. It creates the tables, the guard rails (20 portfolios max, paper money only) and the `demo_reset()` function. Regenerate it with `npm run supabase:schema` after changing an entity. Then run `supabase/migrations/20261028120000_wallet_registry.sql`, which adds the wallet registry tables (hand-written, not generated).
+- Deploy the three Edge Functions: `npx supabase login`, `npx supabase link --project-ref <ref>`, `npx supabase functions deploy demo-tick demo-whales demo-wallets --no-verify-jwt`. Each function folder carries its own copy of the engine (kept in sync by `npm run engine:sync`).
+- Run `supabase/cron.sql` in the SQL editor after replacing `<PROJECT_REF>`. It generates a random token (kept in Vault and in a server-only table; nothing to paste), then schedules the tick, the whale scan and the wallet scan every 5 minutes, and the reset every 2 hours. The tick seeds two sample portfolios whenever the sandbox is empty, so visitors never see a blank screen.
 
 **2. Vercel (the site).**
 - Import the repository (Add New → Project → GitHub). Vercel reads `vercel.json`: Vite, `npm run build`, output `dist`, all routes to `index.html`.
 - Set three environment variables: `VITE_APP_MODE=demo`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (Project Settings → API). Deploy. Every push to `main` redeploys.
 
-**What visitors get.** A dashboard with the shared portfolios, live whale tracking, and the wizard. They can start paper portfolios in the shared sandbox (capped at 20). Their followed wallets and alert settings stay in their own browser. There is no sign-in and no way to create an account. Without the two Supabase variables the demo still works: each visitor then gets a private sandbox in their own browser.
+**What visitors get.** A dashboard with the shared portfolios, live whale tracking, a Wallets tab with every wallet the server scan has seen, and the wizard. They can start paper portfolios in the shared sandbox (capped at 20). Their followed wallets and alert settings stay in their own browser. There is no sign-in and no way to create an account. Without the two Supabase variables the demo still works: each visitor then gets a private sandbox in their own browser.
 
 **How it is wired.** `VITE_APP_MODE=demo` makes `src/api/base44Client.js` skip Base44 entirely and use `src/api/sandboxClient.js` (Supabase, anon key, row-level security: read, create and update only) or `src/api/localClient.js`. In the shared sandbox the browser does not run the one-minute engine loop; the `demo-tick` function does, every 5 minutes, and the dashboard refreshes every 30 seconds. The "tick now", launch and stop actions still run the engine in the browser so changes show up at once.
 

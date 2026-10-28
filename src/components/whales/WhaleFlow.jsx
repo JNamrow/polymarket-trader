@@ -49,7 +49,7 @@ function FillRow({ t, signals, category, followed }) {
   );
 }
 
-export default function WhaleFlow({ trades, signalsById, categories, pendingStats, totalWallets, minUsd, onMinUsd, side, onSide, feed, following }) {
+export default function WhaleFlow({ trades, signalsById, categories, pendingStats, totalWallets, minUsd, onMinUsd, side, onSide, feed, following, registryTotal = null }) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [only, setOnly] = useState({ contrarian: false, flagged: false, followed: false });
@@ -119,7 +119,12 @@ export default function WhaleFlow({ trades, signalsById, categories, pendingStat
         <Tile label="Fills shown" value={rows.length} sub={span > 0 ? `last ${shortAgo(Date.now() - span)}` : null} />
         <Tile label="Dollar volume" value={formatUsd(totalUsd, { compact: true })} sub={totalUsd > 0 ? `${Math.round((buyUsd / totalUsd) * 100)}% buys` : null} />
         <Tile label="Flagged fills" value={flagged} sub="any insider signal" />
-        <Tile label="Wallets checked" value={`${Math.max(0, totalWallets - pendingStats)}/${totalWallets}`} sub={pendingStats > 0 ? 'loading stats…' : 'stats loaded'} />
+        <Tile
+          label="Wallets checked"
+          value={`${Math.max(0, totalWallets - pendingStats)}/${totalWallets}`}
+          sub={pendingStats > 0 ? 'loading stats…' : registryTotal ? `in this window · ${registryTotal.toLocaleString()} in the Wallets registry` : 'stats loaded'}
+          title="Wallets behind the fills shown here. The Wallets tab lists every wallet the server scan has seen."
+        />
       </div>
 
       <div className="surface overflow-hidden">
