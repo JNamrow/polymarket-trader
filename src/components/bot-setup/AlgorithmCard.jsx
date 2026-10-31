@@ -44,7 +44,7 @@ const algorithms = [
 export default function AlgorithmSelector({ selected, onSelect }) {
   return (
     <div className="space-y-3">
-      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Algorithm</label>
+      <label className="text-xs font-medium text-muted-foreground">Algorithm</label>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
         {algorithms.map(({ id, name, description, icon: Icon }) => {
           const isSelected = selected === id;

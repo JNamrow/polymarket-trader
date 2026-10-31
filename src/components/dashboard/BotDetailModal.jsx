@@ -17,18 +17,18 @@ const CustomTooltip = ({ active, payload }) => {
   return (
     <div className="bg-card border border-border rounded-lg px-3 py-2 shadow-xl">
       <p className="text-xs text-muted-foreground">{format(point.t, 'MMM d, HH:mm')}</p>
-      <p className={cn('text-sm font-mono font-semibold', point.pnl >= 0 ? 'text-primary' : 'text-destructive')}>{formatSignedUsd(point.pnl)}</p>
+      <p className={cn('text-sm font-mono font-medium', point.pnl >= 0 ? 'text-primary' : 'text-destructive')}>{formatSignedUsd(point.pnl)}</p>
     </div>
   );
 };
 
 const LOG_COLORS = {
-  sys: 'text-slate-400',
-  info: 'text-sky-400',
-  ok: 'text-emerald-400',
+  sys: 'text-muted-foreground',
+  info: 'text-foreground/80',
+  ok: 'text-primary',
   warn: 'text-yellow-400',
-  trade: 'text-violet-300',
-  error: 'text-red-400',
+  trade: 'text-primary',
+  error: 'text-destructive',
 };
 
 // ─── Activity log (real engine output) ────────────────────────────────────────
@@ -50,11 +50,11 @@ function ActivityLog({ bot, className }) {
         </div>
         <div className="flex items-center gap-1.5 ml-2 min-w-0">
           <Terminal className="w-3 h-3 text-slate-500 flex-shrink-0" />
-          <span className="text-[11px] font-mono text-slate-400 truncate">engine — {bot.name}</span>
+          <span className="text-[11px] font-mono text-muted-foreground capitalize truncate">engine — {bot.name}</span>
         </div>
         <div className="ml-auto flex items-center gap-1.5">
-          <span className={cn('w-1.5 h-1.5 rounded-full', bot.status === 'running' ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500')} />
-          <span className="text-[10px] font-mono text-slate-400 uppercase">{bot.status}</span>
+          <span className={cn('w-1.5 h-1.5 rounded-full', bot.status === 'running' ? 'bg-primary motion-safe:animate-pulse-glow' : 'bg-slate-500')} />
+          <span className="text-[11px] font-mono text-muted-foreground capitalize">{bot.status}</span>
         </div>
       </div>
       <div ref={logRef} className="flex-1 overflow-y-auto p-4 space-y-0.5 font-mono text-[11px] leading-relaxed">
@@ -82,7 +82,7 @@ function PositionRow({ trade }) {
   return (
     <div className="px-3 py-2 text-xs hover:bg-secondary/30 transition-colors">
       <div className="flex items-center gap-2">
-        <span className={cn('w-8 flex-shrink-0 font-bold font-mono', trade.outcome === 'YES' ? 'text-primary' : 'text-destructive')}>{trade.outcome}</span>
+        <span className={cn('w-8 flex-shrink-0 font-medium font-mono', trade.outcome === 'YES' ? 'text-primary' : 'text-destructive')}>{trade.outcome}</span>
         <a
           href={trade.market_url || '#'}
           target="_blank"
@@ -98,15 +98,14 @@ function PositionRow({ trade }) {
         <span className="w-14 text-right font-mono flex-shrink-0 flex items-center justify-end gap-1">
           {isOpen && (
             <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
             </span>
           )}
           <span className={isOpen ? 'text-primary/80' : 'text-muted-foreground'}>{formatCents(mark)}</span>
         </span>
-        <span className={cn('w-16 text-right font-mono font-bold flex-shrink-0', positive ? 'text-primary' : 'text-destructive')}>{formatSignedUsd(pnl)}</span>
+        <span className={cn('w-16 text-right font-mono font-medium flex-shrink-0', positive ? 'text-primary' : 'text-destructive')}>{formatSignedUsd(pnl)}</span>
       </div>
-      <div className="flex items-center gap-2 mt-0.5 pl-10 text-[10px] text-muted-foreground/70 truncate">
+      <div className="flex items-center gap-2 mt-0.5 pl-10 text-[11px] text-muted-foreground/70 truncate">
         <span>{trade.timestamp ? format(new Date(trade.timestamp), 'MMM d HH:mm') : ''}</span>
         {trade.edge_at_entry != null && <span>edge {Number(trade.edge_at_entry) >= 0 ? '+' : ''}{Number(trade.edge_at_entry).toFixed(1)}%</span>}
         {trade.signal_reason && <span className="truncate">· {trade.signal_reason}</span>}
@@ -119,14 +118,14 @@ function PositionRow({ trade }) {
 function PositionsTable({ title, trades, emptyText }) {
   return (
     <div>
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+      <p className="text-xs font-medium text-muted-foreground mb-2">
         {title} {trades.length > 0 ? `(${trades.length})` : ''}
       </p>
       {trades.length === 0 ? (
         <div className="text-center py-6 text-xs text-muted-foreground bg-secondary/30 rounded-xl">{emptyText}</div>
       ) : (
         <div className="rounded-xl overflow-hidden border border-border">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/40 text-[11px] text-muted-foreground font-medium">
             <span className="w-8 flex-shrink-0">Side</span>
             <span className="flex-1 min-w-0">Market</span>
             <span className="w-14 text-right flex-shrink-0 hidden sm:block">Shares</span>
@@ -182,7 +181,7 @@ In under 150 words and plain language: 1) what the bot is currently exposed to, 
   if (isDemoMode()) {
     return (
       <div className="space-y-1">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">AI Brief</p>
+        <p className="text-xs font-medium text-muted-foreground">AI brief</p>
         <p className="text-[11px] text-muted-foreground/70">Off in the demo because it spends LLM credits. The full version asks Base44's LLM to sum up exposure and risk from the positions above.</p>
       </div>
     );
@@ -191,7 +190,7 @@ In under 150 words and plain language: 1) what the bot is currently exposed to, 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">AI Brief</p>
+        <p className="text-xs font-medium text-muted-foreground">AI brief</p>
         <Button size="sm" variant="outline" className="h-7 text-xs border-fuchsia-500/30 text-fuchsia-300 hover:bg-fuchsia-500/10" onClick={run} disabled={loading}>
           {loading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
           <span className="ml-1.5">{brief ? 'Refresh' : 'Analyze this run'}</span>
@@ -238,10 +237,10 @@ export default function BotDetailModal({ bot, trades, open, onClose, onTick }) {
         {/* Top bar */}
         <div className="flex items-center gap-3 px-5 py-2.5 bg-secondary/40 border-b border-border flex-shrink-0 text-xs">
           <span className="text-muted-foreground">Execution:</span>
-          <span className={bot.is_paper ? 'text-violet-300' : 'text-amber-300'}>
+          <span className={bot.is_paper ? 'text-muted-foreground' : 'text-amber-300'}>
             {bot.is_paper ? 'paper trading on live market prices' : 'live market data, simulated fills (no signer connected)'}
           </span>
-          {bot.last_error && <span className="text-destructive ml-auto truncate">⚠ {bot.last_error}</span>}
+          {bot.last_error && <span className="text-destructive ml-auto truncate">{bot.last_error}</span>}
           {!bot.last_error && bot.last_tick_at && (
             <span className="text-muted-foreground/60 ml-auto hidden sm:block">last tick {formatDistanceToNowStrict(new Date(bot.last_tick_at))} ago</span>
           )}
@@ -259,7 +258,7 @@ export default function BotDetailModal({ bot, trades, open, onClose, onTick }) {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-sm font-semibold text-foreground">{bot.name}</h2>
+                    <h2 className="text-sm font-medium text-foreground">{bot.name}</h2>
                     <Badge variant="outline" className="text-xs border-border text-muted-foreground">
                       {ALGORITHM_LABELS[bot.algorithm] || bot.algorithm}
                     </Badge>
@@ -282,14 +281,14 @@ export default function BotDetailModal({ bot, trades, open, onClose, onTick }) {
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <div className={cn('text-xl font-mono font-bold flex items-center gap-1 justify-end', isPositive ? 'text-primary' : 'text-destructive')}>
+                  <div className={cn('text-xl font-mono font-medium flex items-center gap-1 justify-end', isPositive ? 'text-primary' : 'text-destructive')}>
                     {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                     {formatSignedUsd(pnl)}
                   </div>
                   <div className={cn('text-xs font-mono', isPositive ? 'text-primary/70' : 'text-destructive/70')}>
                     {bot.pnl_percent ? `${isPositive ? '+' : ''}${Number(bot.pnl_percent).toFixed(1)}%` : '0.0%'}
                   </div>
-                  <div className="text-[10px] font-mono text-muted-foreground/70 mt-0.5">
+                  <div className="text-[11px] font-mono text-muted-foreground/70 mt-0.5">
                     {formatSignedUsd(bot.realized_pnl)} realized · {formatSignedUsd(bot.unrealized_pnl)} open
                   </div>
                 </div>
@@ -300,17 +299,17 @@ export default function BotDetailModal({ bot, trades, open, onClose, onTick }) {
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-secondary/50 border border-border rounded-lg p-3 text-center">
                   <p className="text-xs text-muted-foreground">Value</p>
-                  <p className="text-sm font-mono font-semibold text-foreground mt-0.5">${(Number(bot.current_value) || Number(bot.fund_allocation) || 0).toFixed(2)}</p>
+                  <p className="text-sm font-mono font-medium text-foreground mt-0.5">${(Number(bot.current_value) || Number(bot.fund_allocation) || 0).toFixed(2)}</p>
                 </div>
                 <div className="bg-secondary/50 border border-border rounded-lg p-3 text-center">
                   <p className="text-xs text-muted-foreground">Open / Closed</p>
-                  <p className="text-sm font-mono font-semibold text-foreground mt-0.5">
+                  <p className="text-sm font-mono font-medium text-foreground mt-0.5">
                     {openTrades.length} / {closedTrades.length}
                   </p>
                 </div>
                 <div className="bg-secondary/50 border border-border rounded-lg p-3 text-center">
                   <p className="text-xs text-muted-foreground">Avg Edge at Entry</p>
-                  <p className={cn('text-sm font-mono font-semibold mt-0.5', (Number(bot.avg_edge) || 0) >= 0 ? 'text-primary' : 'text-destructive')}>
+                  <p className={cn('text-sm font-mono font-medium mt-0.5', (Number(bot.avg_edge) || 0) >= 0 ? 'text-primary' : 'text-destructive')}>
                     {bot.avg_edge != null ? `${Number(bot.avg_edge) > 0 ? '+' : ''}${Number(bot.avg_edge).toFixed(1)}%` : '—'}
                   </p>
                 </div>
@@ -323,7 +322,7 @@ export default function BotDetailModal({ bot, trades, open, onClose, onTick }) {
                   </span>
                 ))}
                 {bot.status === 'running' && onTick && (
-                  <Button size="sm" variant="ghost" className="h-6 px-2 text-xs text-sky-400 hover:text-sky-300 ml-auto" onClick={() => onTick(bot)}>
+                  <Button size="sm" variant="ghost" className="h-6 px-2 text-xs text-foreground hover:text-primary ml-auto" onClick={() => onTick(bot)}>
                     <RefreshCw className="w-3 h-3 mr-1" />
                     Tick now
                   </Button>
@@ -332,7 +331,7 @@ export default function BotDetailModal({ bot, trades, open, onClose, onTick }) {
 
               {history.length > 1 && (
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">P&L Over Time</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">P&L Over Time</p>
                   <div className="h-36 bg-secondary/30 rounded-xl p-2">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={history} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
@@ -376,13 +375,13 @@ export default function BotDetailModal({ bot, trades, open, onClose, onTick }) {
               <AiBrief bot={bot} openTrades={openTrades} closedTrades={closedTrades} />
 
               <div className="md:hidden">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Activity Log</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Activity log</p>
                 <div className="h-64 rounded-xl overflow-hidden border border-[#21262d]">
                   <ActivityLog bot={bot} />
                 </div>
               </div>
 
-              <p className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
+              <p className="text-[11px] text-muted-foreground/60 flex items-center gap-1">
                 <ExternalLink className="w-3 h-3" />
                 Market names link to Polymarket. Prices come from the Gamma and CLOB public APIs.
               </p>

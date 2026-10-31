@@ -51,7 +51,7 @@ const COPY_RISK = { maxPositions: 25, maxPositionPct: 25 };
 function Field({ label, children, hint }) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</label>
+      <label className="text-xs font-medium text-muted-foreground">{label}</label>
       {children}
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
@@ -228,7 +228,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
   };
 
   const paperLook = isPaper && !demo; // the demo keeps the primary look: everything in it is paper anyway
-  const accent = paperLook ? 'violet' : 'primary';
+  const accent = 'primary'; // one accent in the chrome: the primary action is always the green button
   const summary = isCopy
     ? `${formatUsd(fund, { compact: true })}${isPaper ? ' paper' : ''} · copying ${pilotNames.join(', ') || '—'} · ${copyMode === 'mirror' ? 'mirror now' : 'new moves only'} · ${untilStopped ? 'until stopped' : `${duration}h`}`
     : `${formatUsd(fund, { compact: true })}${isPaper ? ' paper' : ''} · ${ALGORITHM_LABELS[algorithm] || algorithm} · ${categories.join(', ')} · ${duration}h`;
@@ -238,11 +238,11 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
       <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto overscroll-contain bg-card border-border p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', paperLook ? 'bg-violet-500/10' : 'bg-primary/10')}>
-              {paperLook ? <FlaskConical className="w-4 h-4 text-violet-400" /> : <Rocket className="w-4 h-4 text-primary" />}
+            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', paperLook ? 'bg-secondary' : 'bg-primary/10')}>
+              {paperLook ? <FlaskConical className="w-4 h-4 text-foreground" /> : <Rocket className="w-4 h-4 text-primary" />}
             </div>
             <div className="min-w-0">
-              <DialogTitle className="text-base font-semibold text-foreground">{paperLook ? 'New paper portfolio' : 'Start a portfolio'}</DialogTitle>
+              <DialogTitle className="text-base font-medium text-foreground">{paperLook ? 'New paper portfolio' : 'Start a portfolio'}</DialogTitle>
               <p className="text-xs text-muted-foreground mt-0.5">Choose an amount, pick a trader to copy or a strategy to run, and set it running.</p>
             </div>
             <ol className="ml-auto hidden sm:flex items-center gap-1 text-[11px]">
@@ -253,7 +253,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                     onClick={() => s.id < step && setStep(s.id)}
                     className={cn('flex items-center gap-1.5 px-2 py-1 rounded-md', step === s.id ? 'bg-secondary text-foreground' : s.id < step ? 'text-primary' : 'text-muted-foreground')}
                   >
-                    <span className={cn('w-4 h-4 rounded-full border text-[10px] flex items-center justify-center font-mono', step === s.id ? 'border-foreground' : s.id < step ? 'border-primary bg-primary text-primary-foreground' : 'border-border')}>
+                    <span className={cn('w-4 h-4 rounded-full border text-[11px] flex items-center justify-center font-mono', step === s.id ? 'border-foreground' : s.id < step ? 'border-primary bg-primary text-primary-foreground' : 'border-border')}>
                       {s.id < step ? <Check className="w-2.5 h-2.5" /> : s.id}
                     </span>
                     {s.label}
@@ -281,9 +281,9 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                         key={id}
                         type="button"
                         onClick={() => setIsPaper(id === 'paper')}
-                        className={cn('text-left p-3 rounded-xl border transition-[color,background-color,border-color,box-shadow] duration-150 ease-out', active ? (id === 'paper' ? 'border-violet-500/50 bg-violet-500/5' : 'border-primary/50 bg-primary/5') : 'border-border bg-background hover:bg-secondary/40')}
+                        className={cn('text-left p-3 rounded-xl border transition-[color,background-color,border-color,box-shadow] duration-150 ease-out', active ? (id === 'paper' ? 'border-foreground/30 bg-secondary/60' : 'border-primary/50 bg-primary/5') : 'border-border bg-background hover:bg-secondary/40')}
                       >
-                        <p className={cn('text-sm font-medium flex items-center gap-1.5', active ? (id === 'paper' ? 'text-violet-300' : 'text-primary') : 'text-foreground')}>
+                        <p className={cn('text-sm font-medium flex items-center gap-1.5', active ? (id === 'paper' ? 'text-foreground' : 'text-primary') : 'text-foreground')}>
                           <Icon className="w-3.5 h-3.5" /> {title}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5">{text}</p>
@@ -317,7 +317,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                       onClick={() => setFund(amt)}
                       className={cn(
                         'pressable px-3 py-1 rounded-md text-xs font-mono border',
-                        fund === amt ? (paperLook ? 'border-violet-500/50 bg-violet-500/10 text-violet-400' : 'border-primary/50 bg-primary/10 text-primary') : 'border-border bg-background text-muted-foreground hover:text-foreground'
+                        fund === amt ? (paperLook ? 'border-foreground/30 bg-secondary text-foreground' : 'border-primary/50 bg-primary/10 text-primary') : 'border-border bg-background text-muted-foreground hover:text-foreground'
                       )}
                     >
                       ${amt}
@@ -377,7 +377,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
 
           {step === 3 && (
             <>
-              <div className={cn('rounded-xl border p-3 text-xs', paperLook ? 'border-violet-500/30 bg-violet-500/5 text-violet-200' : 'border-primary/30 bg-primary/5 text-foreground')}>{summary}</div>
+              <div className={cn('rounded-xl border p-3 text-xs', paperLook ? 'border-border bg-secondary/60 text-foreground' : 'border-primary/30 bg-primary/5 text-foreground')}>{summary}</div>
 
               <Field label="Name (optional)">
                 <Input value={botName} onChange={e => setBotName(e.target.value)} placeholder={isCopy ? `copy-${(pilotNames[0] || 'trader').toLowerCase()}` : 'e.g. momentum-alpha'} className="bg-background border-border font-mono text-sm" />
@@ -404,11 +404,11 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                   <Field label="Limits" hint="Each pilot gets an equal share of the amount. A position is sized to the pilot's share of their own book, capped by these limits. Fills under $2 are skipped.">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="bg-background border border-border rounded-lg p-2.5">
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Max positions</p>
+                        <p className="text-[11px] text-muted-foreground mb-1">Max positions</p>
                         <Input type="number" min={1} max={100} value={copyRisk.maxPositions} onChange={e => setCopyRisk(r => ({ ...r, maxPositions: Number(e.target.value) }))} className="h-8 bg-transparent border-border font-mono text-sm" />
                       </div>
                       <div className="bg-background border border-border rounded-lg p-2.5">
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Max per position (%)</p>
+                        <p className="text-[11px] text-muted-foreground mb-1">Max per position (%)</p>
                         <Input type="number" min={1} max={100} value={copyRisk.maxPositionPct} onChange={e => setCopyRisk(r => ({ ...r, maxPositionPct: Number(e.target.value) }))} className="h-8 bg-transparent border-border font-mono text-sm" />
                       </div>
                     </div>
@@ -425,11 +425,11 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
                     {ownExits && (
                       <div className="grid grid-cols-2 gap-2">
                         <div className="bg-background border border-border rounded-lg p-2.5">
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Stop loss (%)</p>
+                          <p className="text-[11px] text-muted-foreground mb-1">Stop loss (%)</p>
                           <Input type="number" min={1} max={90} value={risk.stopLossPct} onChange={e => setRisk(r => ({ ...r, stopLossPct: Number(e.target.value) }))} className="h-8 bg-transparent border-border font-mono text-sm" />
                         </div>
                         <div className="bg-background border border-border rounded-lg p-2.5">
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Take profit (%)</p>
+                          <p className="text-[11px] text-muted-foreground mb-1">Take profit (%)</p>
                           <Input type="number" min={1} max={300} value={risk.takeProfitPct} onChange={e => setRisk(r => ({ ...r, takeProfitPct: Number(e.target.value) }))} className="h-8 bg-transparent border-border font-mono text-sm" />
                         </div>
                       </div>
@@ -494,7 +494,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
             <span />
           )}
           {step < 3 ? (
-            <Button type="button" onClick={next} className={cn('ml-auto h-11 px-6 font-semibold text-sm rounded-xl', accent === 'violet' ? 'bg-violet-600 hover:bg-violet-500 text-white' : 'bg-primary hover:bg-primary/90 text-primary-foreground')}>
+            <Button type="button" onClick={next} className={cn('ml-auto h-11 px-6 font-medium text-sm rounded-xl', accent === 'violet' ? 'bg-violet-600 hover:bg-violet-500 text-white' : 'bg-primary hover:bg-primary/90 text-primary-foreground')}>
               Next <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
@@ -502,7 +502,7 @@ export default function BotLaunchModal({ open, onClose, mode = 'paper', availabl
               type="button"
               onClick={handleLaunch}
               disabled={createMutation.isPending}
-              className={cn('ml-auto h-11 px-6 font-semibold text-sm rounded-xl', accent === 'violet' ? 'bg-violet-600 hover:bg-violet-500 text-white' : 'bg-primary hover:bg-primary/90 text-primary-foreground')}
+              className={cn('ml-auto h-11 px-6 font-medium text-sm rounded-xl', accent === 'violet' ? 'bg-violet-600 hover:bg-violet-500 text-white' : 'bg-primary hover:bg-primary/90 text-primary-foreground')}
             >
               {createMutation.isPending ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

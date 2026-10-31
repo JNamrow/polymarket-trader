@@ -34,7 +34,7 @@ function CandidateRow({ wallet, selected, onToggle, sub }) {
       <TraderAvatar src={wallet.profileImage} address={wallet.address} size="sm" />
       <div className="flex-1 min-w-0">
         <p className="text-foreground truncate">{wallet.name || `${wallet.address.slice(0, 6)}…${wallet.address.slice(-4)}`}</p>
-        {sub && <p className="text-[10px] text-muted-foreground truncate">{sub}</p>}
+        {sub && <p className="text-[11px] text-muted-foreground truncate">{sub}</p>}
       </div>
       {wallet.pnl != null && <Pnl value={wallet.pnl} className="flex-shrink-0" />}
       <span className={cn('w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0', selected ? 'border-primary bg-primary text-primary-foreground' : 'border-border')}>{selected && <Check className="w-3 h-3" />}</span>
@@ -133,7 +133,7 @@ export default function PilotPicker({ selected = [], onChange, fund = 0, isPaper
         <div className="space-y-2">
           <div className="flex flex-wrap gap-1.5">
             {selected.map(p => (
-              <span key={p.address} className="inline-flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-full border border-primary/40 bg-primary/10 text-xs text-primary">
+              <span key={p.address} className="inline-flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-md border border-primary/40 bg-primary/10 text-xs text-primary">
                 <TraderAvatar src={p.profileImage} address={p.address} size="sm" className="w-5 h-5" />
                 {p.name || `${p.address.slice(0, 6)}…${p.address.slice(-4)}`}
                 <button type="button" onClick={() => toggle(p)} className="hover:text-foreground" title="Remove">
@@ -149,7 +149,7 @@ export default function PilotPicker({ selected = [], onChange, fund = 0, isPaper
             ))}
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Start</label>
+            <label className="text-xs font-medium text-muted-foreground">Start</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {[
                 ['mirror', 'Mirror their book now', 'Buy into every position they hold today, in their proportions. Then follow their moves.'],

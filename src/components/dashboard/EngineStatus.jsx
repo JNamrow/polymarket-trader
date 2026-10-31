@@ -24,10 +24,10 @@ export default function EngineStatus({ engine, runningCount }) {
       <span
         className={cn(
           'w-1.5 h-1.5 rounded-full',
-          engine.running ? 'bg-sky-400 motion-safe:animate-pulse' : runningCount > 0 ? 'bg-primary motion-safe:animate-pulse-glow' : 'bg-muted-foreground/40'
+          engine.running ? 'bg-primary motion-safe:animate-pulse' : runningCount > 0 ? 'bg-primary motion-safe:animate-pulse-glow' : 'bg-muted-foreground/40'
         )}
       />
-      <span className="text-xs text-muted-foreground font-mono hidden sm:inline">{label}</span>
+      <span className="text-xs text-muted-foreground font-mono whitespace-nowrap hidden md:inline">{label}</span>
       {engine.error && <AlertTriangle className="w-3.5 h-3.5 text-yellow-400" />}
       <button
         type="button"

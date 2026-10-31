@@ -9,20 +9,20 @@ import { ALERT_KIND_LABELS } from '@/lib/useWhaleAlerts';
 import { TraderLink, shortAgo, marketUrl } from './shared';
 
 const KIND_STYLES = {
-  followed: 'border-yellow-500/40 bg-yellow-500/10 text-yellow-300',
+  followed: 'border-border bg-secondary text-foreground/80',
   insider: 'border-rose-500/40 bg-rose-500/10 text-rose-300',
-  contrarian: 'border-violet-500/40 bg-violet-500/10 text-violet-300',
-  whale: 'border-sky-500/40 bg-sky-500/10 text-sky-300',
+  contrarian: 'border-border bg-secondary text-foreground/80',
+  whale: 'border-border bg-secondary text-foreground/80',
 };
 
 function AlertRow({ a }) {
   return (
     <div className={cn('px-3 py-2 text-xs', a.initial && !a.stored && 'opacity-70')}>
       <div className="flex items-center gap-2">
-        <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 font-normal', KIND_STYLES[a.kind])}>
+        <Badge variant="outline" className={cn('text-[11px] px-1.5 py-0 font-normal', KIND_STYLES[a.kind])}>
           {ALERT_KIND_LABELS[a.kind]}
         </Badge>
-        <span className="font-mono text-[10px] text-muted-foreground ml-auto">{shortAgo(a.timestamp)}</span>
+        <span className="font-mono text-[11px] text-muted-foreground ml-auto">{shortAgo(a.timestamp)}</span>
       </div>
       <p className="mt-1 text-foreground/90">
         <TraderLink address={a.wallet} name={a.name} showAvatar={false} className="font-medium" />{' '}
@@ -46,7 +46,7 @@ export default function AlertsMenu({ alerts, unread, markRead, prefs, stored = [
         <button type="button" className="relative h-8 px-2.5 flex items-center gap-1.5 rounded-lg border border-border bg-card text-xs text-muted-foreground hover:text-foreground" title="Alerts">
           <Bell className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Alerts</span>
-          {unread > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-mono flex items-center justify-center">{unread > 99 ? '99+' : unread}</span>}
+          {unread > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-md bg-foreground text-background text-[11px] font-mono flex items-center justify-center">{unread > 99 ? '99+' : unread}</span>}
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[380px] max-w-[92vw] p-0 bg-card border-border">
@@ -56,7 +56,7 @@ export default function AlertsMenu({ alerts, unread, markRead, prefs, stored = [
             <SettingsIcon className="w-3.5 h-3.5" />
           </Link>
         </div>
-        <p className="px-3 py-1.5 text-[10px] text-muted-foreground border-b border-border/60">
+        <p className="px-3 py-1.5 text-[11px] text-muted-foreground border-b border-border/60">
           Followed wallets{prefs?.followed === false ? ' (off)' : ''} · insiders{prefs?.insiders === false ? ' (off)' : ''} · contrarian ≥ {formatUsd(prefs?.minUsd || 0, { compact: true })}
           {prefs?.contrarian === false ? ' (off)' : ''} · whale ≥ {formatUsd((prefs?.minUsd || 0) * 4, { compact: true })}
         </p>
@@ -70,7 +70,7 @@ export default function AlertsMenu({ alerts, unread, markRead, prefs, stored = [
               ))}
             </div>
           )}
-          <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground border-y border-border/60 bg-muted/30">
+          <div className="px-3 py-1.5 text-[11px] text-muted-foreground border-y border-border/60 bg-muted/30">
             Stored by the server scanner {storedUnavailable ? '· not deployed' : stored.length ? `· ${stored.length}` : '· none yet'}
           </div>
           {stored.length > 0 && (

@@ -7,13 +7,13 @@ export default function CustomParams({ params, onChange }) {
 
   return (
     <div className="space-y-4 surface p-4">
-      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+      <label className="text-xs font-medium text-muted-foreground">
         Custom Parameters
       </label>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-foreground">Entry Threshold</span>
+          <span className="text-sm text-foreground">Entry threshold</span>
           <span className="text-sm font-mono text-primary">{params.entry.toFixed(2)}</span>
         </div>
         <Slider
@@ -28,7 +28,7 @@ export default function CustomParams({ params, onChange }) {
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-foreground">Exit Threshold</span>
+          <span className="text-sm text-foreground">Exit threshold</span>
           <span className="text-sm font-mono text-primary">{params.exit.toFixed(2)}</span>
         </div>
         <Slider
@@ -42,7 +42,7 @@ export default function CustomParams({ params, onChange }) {
       </div>
 
       <div className="space-y-2">
-        <span className="text-sm text-foreground">Max Positions</span>
+        <span className="text-sm text-foreground">Max positions</span>
         <Input
           type="number"
           min={1}

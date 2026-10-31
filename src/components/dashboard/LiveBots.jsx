@@ -29,7 +29,7 @@ export function pilotNames(bot) {
 export function FillModeBadge({ bot, className }) {
   if (bot.is_paper) {
     return (
-      <Badge variant="outline" className={cn('text-xs border-violet-500/30 bg-violet-500/10 text-violet-400 flex items-center gap-1', className)}>
+      <Badge variant="outline" className={cn('text-xs border-border bg-secondary text-muted-foreground flex items-center gap-1', className)}>
         <FlaskConical className="w-2.5 h-2.5" />
         Paper
       </Badge>
@@ -125,7 +125,7 @@ export default function LiveBots({ bots, trades = [], onPause, onStop, onResume,
               </div>
 
               <div className="text-right flex-shrink-0">
-                <p className={cn('text-sm font-mono font-semibold', isPositive ? 'text-primary' : 'text-destructive')}>{formatSignedUsd(pnl)}</p>
+                <p className={cn('text-sm font-mono font-medium', isPositive ? 'text-primary' : 'text-destructive')}>{formatSignedUsd(pnl)}</p>
                 <p className={cn('text-xs font-mono', isPositive ? 'text-primary/70' : 'text-destructive/70')}>
                   {bot.pnl_percent ? `${isPositive ? '+' : ''}${Number(bot.pnl_percent).toFixed(1)}%` : '0.0%'}
                 </p>
@@ -137,7 +137,7 @@ export default function LiveBots({ bots, trades = [], onPause, onStop, onResume,
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-7 w-7 text-muted-foreground hover:text-sky-400"
+                      className="h-7 w-7 text-muted-foreground hover:text-foreground"
                       onClick={() => onTick?.(bot)}
                       disabled={engineBusy}
                       title="Tick now"

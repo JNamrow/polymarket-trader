@@ -16,10 +16,10 @@ const CustomTooltip = ({ active, payload }) => {
   return (
     <div className="bg-card border border-border rounded-lg px-3 py-2 shadow-xl">
       <p className="text-xs text-muted-foreground">{format(point.t, 'MMM d, HH:mm')}</p>
-      <p className={cn('text-sm font-mono font-semibold', point.pnl >= 0 ? 'text-primary' : 'text-destructive')}>
+      <p className={cn('text-sm font-mono font-medium', point.pnl >= 0 ? 'text-primary' : 'text-destructive')}>
         {point.pnl >= 0 ? '+' : '-'}${Math.abs(point.pnl).toFixed(2)}
       </p>
-      <p className="text-[10px] text-muted-foreground font-mono">{point.bots} bot{point.bots === 1 ? '' : 's'} contributing</p>
+      <p className="text-[11px] text-muted-foreground font-mono">{point.bots} bot{point.bots === 1 ? '' : 's'} contributing</p>
     </div>
   );
 };
@@ -77,7 +77,7 @@ export default function PnlChart({ botRuns }) {
                 key={f.id}
                 onClick={() => setFilter(f.id)}
                 className={cn(
-                  'px-2 py-0.5 rounded text-[10px] font-medium transition-[color,background-color,border-color,box-shadow] duration-150 ease-out',
+                  'px-2 py-0.5 rounded text-[11px] font-medium transition-[color,background-color,border-color,box-shadow] duration-150 ease-out',
                   filter === f.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 )}
               >

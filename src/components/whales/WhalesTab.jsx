@@ -52,13 +52,13 @@ export default function WhalesTab() {
             >
               <Icon className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{label}</span>
-              {id === 'following' && following.list.length > 0 && <span className="font-mono text-[10px] text-muted-foreground">{following.list.length}</span>}
+              {id === 'following' && following.list.length > 0 && <span className="font-mono text-[11px] text-muted-foreground">{following.list.length}</span>}
             </button>
           ))}
         </div>
         <div className="ml-auto flex items-center gap-2">
           <span className="hidden md:flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <span className={cn('w-1.5 h-1.5 rounded-full', feed.isFetching ? 'bg-primary animate-pulse' : 'bg-primary/60')} />
+            <span className={cn('w-1.5 h-1.5 rounded-full', feed.isFetching ? 'bg-primary motion-safe:animate-pulse' : 'bg-primary/60')} />
             live · {feed.dataUpdatedAt ? `updated ${Math.max(0, Math.round((Date.now() - feed.dataUpdatedAt) / 1000))}s ago` : 'loading'}
           </span>
           <AlertsMenu alerts={alerts.alerts} unread={alerts.unread} markRead={alerts.markRead} prefs={following.prefs} stored={alerts.stored} storedUnavailable={alerts.storedUnavailable} />

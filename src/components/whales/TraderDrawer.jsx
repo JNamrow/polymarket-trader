@@ -93,7 +93,7 @@ function PnlChart({ address, range }) {
 /** Pinned column labels for the small tables in the drawer. */
 function TableHead({ cols }) {
   return (
-    <div className="sticky top-0 z-10 flex items-center gap-2 py-1.5 bg-card text-[10px] uppercase tracking-wider text-muted-foreground">
+    <div className="sticky top-0 z-10 flex items-center gap-2 py-1.5 bg-card text-[11px] text-muted-foreground">
       {cols.map(([cls, label]) => (
         <span key={label} className={cn('flex-shrink-0', cls)}>
           {label}
@@ -106,7 +106,7 @@ function TableHead({ cols }) {
 function OutcomeTag({ outcome, index }) {
   const yes = index === 0;
   return (
-    <span className={cn('font-mono text-[10px] px-1.5 py-0.5 rounded border flex-shrink-0 w-14 text-center truncate', yes ? 'border-primary/30 bg-primary/5 text-primary' : 'border-destructive/30 bg-destructive/5 text-destructive')} title={outcome}>
+    <span className={cn('font-mono text-[11px] px-1.5 py-0.5 rounded border flex-shrink-0 w-14 text-center truncate', yes ? 'border-primary/30 bg-primary/5 text-primary' : 'border-destructive/30 bg-destructive/5 text-destructive')} title={outcome}>
       {String(outcome || (yes ? 'Yes' : 'No')).toUpperCase().slice(0, 7)}
     </span>
   );
@@ -170,7 +170,7 @@ function ClosedTable({ rows, loading, error }) {
             <a href={marketUrl(p.eventSlug)} target="_blank" rel="noreferrer" className="text-muted-foreground truncate block hover:text-foreground hover:underline" title={p.title}>
               {p.title}
             </a>
-            <p className="text-[10px] text-muted-foreground/70 font-mono">
+            <p className="text-[11px] text-muted-foreground/70 font-mono">
               in at {formatCents(p.avgPrice)} · {p.lastEventAt ? format(p.lastEventAt, 'MMM d, yyyy') : ''}
             </p>
           </div>
@@ -199,11 +199,11 @@ function ActivityList({ address }) {
       <TableHead cols={[['w-8', 'Age'], ['w-20', 'Action'], ['flex-1', 'Market'], ['hidden sm:block', 'Price'], ['w-16 text-right', 'Size']]} />
       {rows.map(a => (
         <div key={a.id} className="py-2 flex items-center gap-2 text-xs">
-          <span className="font-mono text-[10px] text-muted-foreground w-8 flex-shrink-0">{shortAgo(a.timestamp)}</span>
+          <span className="font-mono text-[11px] text-muted-foreground w-8 flex-shrink-0">{shortAgo(a.timestamp)}</span>
           {a.type === 'TRADE' ? (
             <SideBadge side={a.side} outcome={a.outcome} />
           ) : (
-            <span className="font-mono text-[10px] px-1.5 py-0 rounded border border-border text-muted-foreground flex-shrink-0">{ACTIVITY_LABEL[a.type] || a.type}</span>
+            <span className="font-mono text-[11px] px-1.5 py-0 rounded border border-border text-muted-foreground flex-shrink-0">{ACTIVITY_LABEL[a.type] || a.type}</span>
           )}
           <a href={marketUrl(a.eventSlug)} target="_blank" rel="noreferrer" className="text-muted-foreground truncate flex-1 hover:text-foreground hover:underline" title={a.title}>
             {a.title}
@@ -255,9 +255,9 @@ function TraderProfile({ address, seed, onClose }) {
         <div className="flex items-start gap-3">
           <TraderAvatar src={seed?.profileImage} address={address} size="lg" />
           <div className="min-w-0 flex-1">
-            <SheetTitle className="text-base font-semibold text-foreground flex items-center gap-1.5 truncate">
+            <SheetTitle className="text-base font-medium text-foreground flex items-center gap-1.5 truncate">
               <span className="truncate">{name}</span>
-              {seed?.verified && <BadgeCheck className="w-4 h-4 text-sky-400 flex-shrink-0" />}
+              {seed?.verified && <BadgeCheck className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
             </SheetTitle>
             <SheetDescription asChild>
               <div className="mt-0.5">

@@ -48,7 +48,7 @@ function Leaderboard({ window, orderBy, category, following }) {
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/30">
         <Trophy className="w-3.5 h-3.5 text-yellow-400" />
         <span className="text-xs font-medium text-foreground">Top traders · {windowLabel}</span>
-        <span className="ml-auto text-[10px] text-muted-foreground uppercase tracking-wider">{orderBy === 'PNL' ? 'P&L' : 'Volume'}</span>
+        <span className="ml-auto text-[11px] text-muted-foreground">{orderBy === 'PNL' ? 'P&L' : 'Volume'}</span>
       </div>
       {board.isLoading ? (
         <SkeletonRows rows={10} />
@@ -63,8 +63,8 @@ function Leaderboard({ window, orderBy, category, following }) {
               <span className="font-mono text-muted-foreground w-6 flex-shrink-0">#{w.rank}</span>
               <TraderLink address={w.address} name={w.name} profileImage={w.profileImage} verified={w.verified} className="flex-1 min-w-0" />
               <div className="text-right flex-shrink-0">
-                <Pnl value={w.pnl} className="font-semibold" />
-                <p className="text-[10px] text-muted-foreground">{formatUsd(w.volume, { compact: true })} vol</p>
+                <Pnl value={w.pnl} className="font-medium" />
+                <p className="text-[11px] text-muted-foreground">{formatUsd(w.volume, { compact: true })} vol</p>
               </div>
               <FollowStar wallet={w} following={following} />
             </div>
@@ -83,7 +83,7 @@ function SmartPositions({ window, category, top, tradersByAddress }) {
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/30">
         <Target className="w-3.5 h-3.5 text-primary" />
         <span className="text-xs font-medium text-foreground">Where the top {top} sit right now</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">
+        <span className="ml-auto text-[11px] text-muted-foreground">
           {smart.loaded}/{smart.total} wallets loaded
         </span>
       </div>
@@ -100,10 +100,10 @@ function SmartPositions({ window, category, top, tradersByAddress }) {
                   <a href={marketUrl(r.eventSlug)} target="_blank" rel="noreferrer" className="text-foreground/90 truncate block hover:underline" title={r.title}>
                     {r.title}
                   </a>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
                     {r.traders} trader{r.traders === 1 ? '' : 's'} · {r.yesTraders} on {r.outcomes[0]} · {formatUsd(r.total, { compact: true })} at risk · price {formatCents(r.yesPrice)}
                   </p>
-                  <p className="text-[10px] text-muted-foreground/80 mt-0.5 truncate">
+                  <p className="text-[11px] text-muted-foreground/80 mt-0.5 truncate">
                     {r.wallets
                       .slice(0, 4)
                       .map(w => `${tradersByAddress[w.wallet]?.name || w.wallet.slice(0, 6)} (${w.yes >= w.no ? r.outcomes[0] : r.outcomes[1]})`)

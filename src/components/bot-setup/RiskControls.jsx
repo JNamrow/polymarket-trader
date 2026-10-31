@@ -14,14 +14,14 @@ export default function RiskControls({ value, onChange }) {
 
   return (
     <div className="space-y-3">
-      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+      <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
         <ShieldCheck className="w-3.5 h-3.5" />
         Risk Controls
       </label>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {FIELDS.map(({ key, label, min, max, step, suffix }) => (
           <div key={key} className="bg-background border border-border rounded-lg p-2.5">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
+            <p className="text-[11px] text-muted-foreground mb-1">{label}</p>
             <div className="relative">
               <Input
                 type="number"

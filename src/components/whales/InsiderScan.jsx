@@ -19,10 +19,10 @@ function WalletCard({ group }) {
           </div>
         </div>
         <div className="text-right flex-shrink-0">
-          <div className={cn('text-xl font-mono font-bold leading-none', group.suspicious ? 'text-rose-300' : group.score >= 40 ? 'text-amber-300' : 'text-foreground')}>{group.score}</div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">suspicion</div>
+          <div className={cn('text-xl font-mono font-medium leading-none', group.suspicious ? 'text-rose-300' : group.score >= 40 ? 'text-amber-300' : 'text-foreground')}>{group.score}</div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">suspicion</div>
           {group.suspicious && (
-            <Badge variant="outline" className="mt-1 text-[10px] px-1.5 py-0 border-rose-500/40 bg-rose-500/10 text-rose-300">
+            <Badge variant="outline" className="mt-1 text-[11px] px-1.5 py-0 border-rose-500/40 bg-rose-500/10 text-rose-300">
               second look
             </Badge>
           )}
@@ -34,16 +34,16 @@ function WalletCard({ group }) {
       <div className="divide-y divide-border/50 border-t border-border/50">
         {shown.map(t => (
           <div key={t.id} className="py-1.5 flex items-center gap-2 text-xs">
-            <span className="font-mono text-[10px] text-muted-foreground w-7 flex-shrink-0">{shortAgo(t.timestamp)}</span>
+            <span className="font-mono text-[11px] text-muted-foreground w-7 flex-shrink-0">{shortAgo(t.timestamp)}</span>
             <SideBadge side={t.side} outcome={t.outcome} />
             <a href={marketUrl(t.eventSlug)} target="_blank" rel="noreferrer" className="text-muted-foreground truncate flex-1 hover:text-foreground hover:underline" title={t.title}>
               {t.title}
             </a>
             <span className="font-mono text-foreground flex-shrink-0">{formatCents(t.price)}</span>
-            <span className="font-mono text-foreground font-semibold flex-shrink-0 w-14 text-right">{formatUsd(t.usd, { compact: true })}</span>
+            <span className="font-mono text-foreground font-medium flex-shrink-0 w-14 text-right">{formatUsd(t.usd, { compact: true })}</span>
           </div>
         ))}
-        {rest > 0 && <p className="py-1.5 text-[10px] text-muted-foreground">+{rest} more</p>}
+        {rest > 0 && <p className="py-1.5 text-[11px] text-muted-foreground">+{rest} more</p>}
       </div>
     </div>
   );
@@ -87,7 +87,7 @@ export default function InsiderScan({ trades, signalsById, pendingStats, totalWa
         <>
           {suspicious.length > 0 && (
             <section className="space-y-2">
-              <p className="text-xs font-medium text-rose-300 uppercase tracking-wider">Needs a second look</p>
+              <p className="text-xs font-medium text-rose-300">Needs a second look</p>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {suspicious.map(g => (
                   <WalletCard key={g.wallet} group={g} />
@@ -97,7 +97,7 @@ export default function InsiderScan({ trades, signalsById, pendingStats, totalWa
           )}
           {others.length > 0 && (
             <section className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Other flagged wallets</p>
+              <p className="text-xs font-medium text-muted-foreground">Other flagged wallets</p>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {others.slice(0, 30).map(g => (
                   <WalletCard key={g.wallet} group={g} />

@@ -40,7 +40,7 @@ export default function SuggestedDuration({ fund, algorithm, categories, value, 
 
   return (
     <div className="space-y-3">
-      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+      <label className="text-xs font-medium text-muted-foreground">
         Run Duration
       </label>
 

@@ -114,7 +114,7 @@
   .lucide * {
     vector-effect: non-scaling-stroke;
   }
-  :is(.font-medium, .font-semibold, .font-bold, button) .lucide {
+  :is(.font-medium, .font-semibold, button) .lucide {
     stroke-width: 2px;
   }
 
@@ -195,15 +195,13 @@
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(12px);
-    filter: blur(4px);
+    transform: translateY(8px);
   }
 }
 
-/* Reduced motion: keep fades and color changes, drop movement, scale and blur. */
+/* Reduced motion: keep fades and color changes, drop movement and scale. */
 @media (prefers-reduced-motion: reduce) {
-  .animate-pulse-glow,
-  .animate-ping {
+  .animate-pulse-glow {
     animation: none;
   }
 }

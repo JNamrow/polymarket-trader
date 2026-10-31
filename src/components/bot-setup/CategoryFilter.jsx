@@ -24,7 +24,7 @@ export default function CategoryFilter({ selected, onToggle }) {
 
   return (
     <div className="space-y-3">
-      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Market Categories</label>
+      <label className="text-xs font-medium text-muted-foreground">Market categories</label>
       <div className="flex flex-wrap gap-2">
         {categories.map(({ id, label }) => {
           const isSelected = selected.includes(id);
@@ -33,7 +33,7 @@ export default function CategoryFilter({ selected, onToggle }) {
               key={id}
               onClick={() => handleToggle(id)}
               className={cn(
-                'pressable px-3.5 py-1.5 rounded-full text-xs font-medium border',
+                'pressable px-3 py-1.5 rounded-md text-xs font-medium border',
                 isSelected ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-border'
               )}
             >

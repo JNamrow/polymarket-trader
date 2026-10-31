@@ -138,30 +138,30 @@ function MarketRow({ market, expanded, onToggle }) {
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground truncate">
             {market.eventTitle && market.eventTitle !== market.question && <span className="truncate">{market.eventTitle}</span>}
             {market.negRisk && (
-              <Badge variant="outline" className="text-[9px] px-1 py-0 border-amber-500/30 text-amber-400">
+              <Badge variant="outline" className="text-[11px] px-1 py-0 border-border text-muted-foreground font-normal">
                 NegRisk
               </Badge>
             )}
           </div>
         </div>
         <div className="text-right flex-shrink-0 w-16">
-          <p className="text-sm font-mono font-semibold text-foreground">{formatCents(market.yesPrice)}</p>
+          <p className="text-sm font-mono font-medium text-foreground">{formatCents(market.yesPrice)}</p>
           <Change value={market.change24h} />
         </div>
         <div className="text-right flex-shrink-0 w-14 hidden sm:block">
-          <p className="text-[10px] text-muted-foreground">spread</p>
+          <p className="text-[11px] text-muted-foreground">spread</p>
           <p className="text-xs font-mono text-foreground/80">{market.spread != null ? formatCents(market.spread) : '—'}</p>
         </div>
         <div className="text-right flex-shrink-0 w-16 hidden md:block">
-          <p className="text-[10px] text-muted-foreground">24h vol</p>
+          <p className="text-[11px] text-muted-foreground">24h vol</p>
           <p className="text-xs font-mono text-foreground/80">{formatUsd(market.volume24h, { compact: true })}</p>
         </div>
         <div className="text-right flex-shrink-0 w-16 hidden lg:block">
-          <p className="text-[10px] text-muted-foreground">liquidity</p>
+          <p className="text-[11px] text-muted-foreground">liquidity</p>
           <p className="text-xs font-mono text-foreground/80">{formatUsd(market.liquidity, { compact: true })}</p>
         </div>
         <div className="text-right flex-shrink-0 w-12 hidden sm:block">
-          <p className="text-[10px] text-muted-foreground">ends</p>
+          <p className="text-[11px] text-muted-foreground">ends</p>
           <p className="text-xs font-mono text-foreground/80">{endsIn(market)}</p>
         </div>
         {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
@@ -209,7 +209,7 @@ export default function MarketsExplorer() {
               setExpanded(null);
             }}
             className={cn(
-              'pressable px-3.5 py-1.5 rounded-full text-xs font-medium border',
+              'pressable px-3 py-1.5 rounded-md text-xs font-medium border',
               category === id ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-card border-border text-muted-foreground hover:text-foreground'
             )}
           >
@@ -239,16 +239,16 @@ export default function MarketsExplorer() {
       <div className="grid grid-cols-3 gap-3">
         <div className="surface p-3 text-center">
           <p className="text-xs text-muted-foreground">Live markets</p>
-          <p className="text-lg font-mono font-bold text-foreground mt-0.5">{universe.data?.markets.length ?? '—'}</p>
+          <p className="text-lg font-mono font-medium text-foreground mt-0.5">{universe.data?.markets.length ?? '—'}</p>
         </div>
         <div className="surface p-3 text-center">
-          <p className="text-xs text-muted-foreground">24h volume (shown)</p>
-          <p className="text-lg font-mono font-bold text-primary mt-0.5">{formatUsd(totalVolume, { compact: true })}</p>
+          <p className="text-xs text-muted-foreground">24h volume, shown markets</p>
+          <p className="text-lg font-mono font-medium text-primary mt-0.5">{formatUsd(totalVolume, { compact: true })}</p>
         </div>
         <div className="surface p-3 text-center">
           <p className="text-xs text-muted-foreground">Updated</p>
-          <p className="text-lg font-mono font-bold text-foreground mt-0.5">
-            {universe.dataUpdatedAt ? `${formatDistanceToNowStrict(universe.dataUpdatedAt)} ago` : '—'}
+          <p className="text-lg font-mono font-medium text-foreground mt-0.5">
+            {universe.dataUpdatedAt ? (Date.now() - universe.dataUpdatedAt < 60_000 ? 'just now' : `${formatDistanceToNowStrict(universe.dataUpdatedAt)} ago`) : '—'}
           </p>
         </div>
       </div>

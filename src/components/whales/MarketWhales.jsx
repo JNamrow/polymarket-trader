@@ -7,7 +7,7 @@ import { TraderLink, SideBadge, LeanBar, shortAgo } from './shared';
 function HolderList({ title, rows, tone }) {
   return (
     <div>
-      <p className={`text-[10px] uppercase tracking-wider mb-1 ${tone}`}>{title}</p>
+      <p className={`text-[11px] mb-1 ${tone}`}>{title}</p>
       {rows.length === 0 ? (
         <p className="text-[11px] text-muted-foreground">—</p>
       ) : (
@@ -36,7 +36,7 @@ export default function MarketWhales({ market }) {
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-xs font-medium text-foreground">
           <Users className="w-3.5 h-3.5 text-primary" /> Biggest holders
-          <span className="text-[10px] text-muted-foreground font-normal ml-auto">top 20 each side, at today's price</span>
+          <span className="text-[11px] text-muted-foreground font-normal ml-auto">top 20 each side, at today's price</span>
         </div>
         {holders.isLoading ? (
           <p className="text-xs text-muted-foreground">Loading holders…</p>
@@ -56,7 +56,7 @@ export default function MarketWhales({ market }) {
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-xs font-medium text-foreground">
           <Waves className="w-3.5 h-3.5 text-primary" /> Big fills
-          <span className="text-[10px] text-muted-foreground font-normal ml-auto">≥ $1k, newest first</span>
+          <span className="text-[11px] text-muted-foreground font-normal ml-auto">≥ $1k, newest first</span>
         </div>
         {fills.isLoading ? (
           <p className="text-xs text-muted-foreground">Loading fills…</p>
@@ -68,11 +68,11 @@ export default function MarketWhales({ market }) {
           <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
             {fills.data.map(t => (
               <div key={t.id} className="flex items-center gap-2 text-[11px]">
-                <span className="font-mono text-[10px] text-muted-foreground w-7 flex-shrink-0">{shortAgo(t.timestamp)}</span>
+                <span className="font-mono text-[11px] text-muted-foreground w-7 flex-shrink-0">{shortAgo(t.timestamp)}</span>
                 <TraderLink address={t.wallet} name={t.name} profileImage={t.profileImage} size="sm" className="w-28 flex-shrink-0" />
                 <SideBadge side={t.side} outcome={t.outcome} />
                 <span className="font-mono text-muted-foreground flex-shrink-0 ml-auto">{formatCents(t.price)}</span>
-                <span className="font-mono text-foreground font-semibold flex-shrink-0 w-14 text-right">{formatUsd(t.usd, { compact: true })}</span>
+                <span className="font-mono text-foreground font-medium flex-shrink-0 w-14 text-right">{formatUsd(t.usd, { compact: true })}</span>
               </div>
             ))}
           </div>

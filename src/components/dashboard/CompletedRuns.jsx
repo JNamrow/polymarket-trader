@@ -36,7 +36,7 @@ function RunRow({ run, onClick }) {
       <span className="text-xs text-muted-foreground font-mono flex-shrink-0 hidden sm:block">
         B:{run.positions_bought || 0} / S:{run.positions_sold || 0}
       </span>
-      <span className={cn('text-sm font-mono font-semibold ml-auto', isPositive ? 'text-primary' : 'text-destructive')}>{formatSignedUsd(pnl)}</span>
+      <span className={cn('text-sm font-mono font-medium ml-auto', isPositive ? 'text-primary' : 'text-destructive')}>{formatSignedUsd(pnl)}</span>
       <Badge
         variant="outline"
         className={cn('text-xs flex-shrink-0', run.status === 'completed' ? 'text-primary border-primary/30' : 'text-destructive border-destructive/30')}
@@ -56,7 +56,7 @@ export default function CompletedRuns({ runs, trades }) {
     return (
       <div className="surface p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-foreground">Completed Runs</h3>
+          <h3 className="text-sm font-medium text-foreground">Completed runs</h3>
           <History className="w-4 h-4 text-muted-foreground" />
         </div>
         <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -70,8 +70,8 @@ export default function CompletedRuns({ runs, trades }) {
     <>
       <div className="surface overflow-hidden">
         <div className="flex items-center justify-between p-4 lg:p-5 border-b border-border">
-          <h3 className="text-sm font-medium text-foreground">Completed Runs</h3>
-          <span className={cn('text-sm font-mono font-semibold', isPositive ? 'text-primary' : 'text-destructive')}>
+          <h3 className="text-sm font-medium text-foreground">Completed runs</h3>
+          <span className={cn('text-sm font-mono font-medium', isPositive ? 'text-primary' : 'text-destructive')}>
             Total: {formatSignedUsd(totalPnl)}
           </span>
         </div>

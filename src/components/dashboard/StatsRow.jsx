@@ -1,23 +1,18 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, DollarSign, Activity, Wallet } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatUsd, formatSignedUsd } from '@/api/polymarket';
 import { demoFunds } from '@/engine/demo.js';
 
-function StatCard({ label, value, subValue, icon: Icon, trend }) {
+function StatCard({ label, value, subValue, trend }) {
   const isPositive = trend === 'up';
   const isNegative = trend === 'down';
 
   return (
     <div className="surface p-4 lg:p-5">
-      <div className="flex items-start justify-between mb-3">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</span>
-        <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-          <Icon className="w-4 h-4 text-muted-foreground" />
-        </div>
-      </div>
+      <p className="text-xs text-muted-foreground mb-3">{label}</p>
       <div className="space-y-1">
-        <p className={cn('text-xl lg:text-2xl font-bold font-mono', isPositive && 'text-primary', isNegative && 'text-destructive', !trend && 'text-foreground')}>
+        <p className={cn('text-xl lg:text-2xl font-medium font-mono', isPositive && 'text-primary', isNegative && 'text-destructive', !trend && 'text-foreground')}>
           {value}
         </p>
         {subValue && (
@@ -54,26 +49,22 @@ export default function StatsRow({ botRuns, demo = false }) {
         label="Total P&L"
         value={formatSignedUsd(totalPnl)}
         subValue={`${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(1)}% on $${totalAllocated.toFixed(0)} allocated`}
-        icon={TrendingUp}
         trend={totalPnl >= 0 ? 'up' : 'down'}
       />
       <StatCard
-        label="Portfolio Value"
+        label="Portfolio value"
         value={formatUsd(demo ? funds.totalFunds : currentValue)}
         subValue={demo ? `${formatUsd(funds.available)} available to trade` : `${active.length} active bot${active.length !== 1 ? 's' : ''} · ${formatSignedUsd(unrealized)} unrealized`}
-        icon={Activity}
       />
       <StatCard
-        label="Funds Deployed"
+        label="Funds deployed"
         value={formatUsd(demo ? funds.deployed : deployedLive)}
         subValue={demo ? `in ${active.length} running portfolio${active.length !== 1 ? 's' : ''} · ${formatSignedUsd(unrealized)} unrealized` : deployedPaper > 0 ? `+ ${formatUsd(deployedPaper)} in paper experiments` : 'Allocated to live bots'}
-        icon={DollarSign}
       />
       <StatCard
-        label="Total Returned"
+        label="Total returned"
         value={formatUsd(totalReturned)}
         subValue={`${finished.length} finished run${finished.length !== 1 ? 's' : ''}`}
-        icon={Wallet}
       />
     </div>
   );

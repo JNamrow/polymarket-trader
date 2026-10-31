@@ -47,7 +47,7 @@ export default function DemoBanner() {
 
   return (
     <div className="mb-4 flex items-center gap-2 rounded-xl border border-border bg-card/70 px-3 py-1.5 text-xs text-muted-foreground">
-      <span className="inline-flex items-center gap-1.5 font-semibold text-foreground flex-shrink-0">
+      <span className="inline-flex items-center gap-1.5 font-medium text-foreground flex-shrink-0">
         <FlaskConical className="w-3.5 h-3.5" /> Demo
       </span>
       <span className="min-w-0 flex-1 truncate" title={text}>

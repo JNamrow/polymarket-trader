@@ -96,12 +96,12 @@ export default function Settings() {
   return (
     <div className={cn('page-enter max-w-xl mx-auto space-y-6', entered && 'entered')}>
       <div className="flex items-center gap-3">
-        <SettingsIcon className="w-5 h-5 text-primary" />
-        <h1 className="text-lg font-semibold text-foreground">Settings</h1>
+        <SettingsIcon className="w-5 h-5 text-muted-foreground" />
+        <h1 className="text-lg font-medium text-foreground">Settings</h1>
       </div>
 
       {/* Polymarket wallet */}
-      <Section icon={Wallet} title="Polymarket wallet" accent="text-primary">
+      <Section icon={Wallet} title="Polymarket wallet" accent="text-muted-foreground">
         <div className="space-y-2">
           <label className="text-xs text-muted-foreground">Profile (proxy) address</label>
           <Input
@@ -126,7 +126,7 @@ export default function Settings() {
               <>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">USDC cash (USDC.e + USDC)</span>
-                  <span className="font-mono text-primary font-semibold">{formatUsd(funds.data.cash)}</span>
+                  <span className="font-mono text-primary font-medium">{formatUsd(funds.data.cash)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Open positions value</span>
@@ -212,7 +212,7 @@ export default function Settings() {
       </Section>
 
       {/* Whale alerts */}
-      <Section icon={Bell} title="Whale alerts" accent="text-primary">
+      <Section icon={Bell} title="Whale alerts" accent="text-muted-foreground">
         <p className="text-xs text-muted-foreground">
           Alerts show as toasts and in the bell menu on the Whales tab while the app is open. The scheduled scanner (whaleScan) stores the same signals on the server every 5 minutes.
         </p>

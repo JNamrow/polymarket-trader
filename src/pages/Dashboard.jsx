@@ -120,7 +120,7 @@ export default function Dashboard() {
             >
               <Wallet className="w-3 h-3 text-muted-foreground" />
               <span className="hidden sm:inline text-xs text-muted-foreground">Available</span>
-              <span className={cn('text-xs font-mono font-semibold', availableFunds > 0 ? 'text-primary' : 'text-destructive')}>
+              <span className={cn('text-xs font-mono font-medium', availableFunds > 0 ? 'text-primary' : 'text-destructive')}>
                 {formatUsd(availableFunds)}
               </span>
             </div>
@@ -133,7 +133,7 @@ export default function Dashboard() {
               onClick={() => setLaunch({ mode: 'paper' })}
               variant="outline"
               size="sm"
-              className="h-8 border-violet-500/30 bg-violet-500/5 text-violet-400 hover:bg-violet-500/10 hover:text-violet-300 font-medium rounded-lg px-2.5"
+              className="h-8 border-border bg-card text-foreground hover:bg-secondary font-medium rounded-lg px-2.5"
             >
               <FlaskConical className="w-3.5 h-3.5" />
               <span className="hidden sm:inline ml-1.5">Experiment</span>

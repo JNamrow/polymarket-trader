@@ -18,12 +18,12 @@ function FillRow({ t, signals, category, followed }) {
   const contrarian = isContrarian(t);
   return (
     <div className={cn('flex items-center gap-3 px-4 py-2.5 border-b border-border/60 last:border-b-0 text-xs hover:bg-secondary/30 transition-colors duration-100', signals?.suspicious && 'bg-rose-500/5')}>
-      <span className="font-mono text-[10px] text-muted-foreground w-8 flex-shrink-0" title={new Date(t.timestamp).toLocaleString()}>
+      <span className="font-mono text-[11px] text-muted-foreground w-8 flex-shrink-0" title={new Date(t.timestamp).toLocaleString()}>
         {shortAgo(t.timestamp)}
       </span>
       <div className="w-36 sm:w-44 flex-shrink-0 min-w-0">
         <TraderLink address={t.wallet} name={t.name} profileImage={t.profileImage} size="sm" className="text-xs w-full" />
-        {followed && <span className="block text-[10px] text-yellow-400 pl-8">following</span>}
+        {followed && <span className="block text-[11px] text-yellow-400 pl-8">following</span>}
       </div>
       <span className="w-24 flex-shrink-0 hidden sm:flex">
         <SideBadge side={t.side} outcome={t.outcome} className="max-w-full truncate" />
@@ -35,15 +35,15 @@ function FillRow({ t, signals, category, followed }) {
         <div className="flex items-center gap-1.5 mt-0.5">
           <SideBadge side={t.side} outcome={t.outcome} className="sm:hidden" />
           <CategoryBadge category={category} />
-          {contrarian && <span className="text-[10px] text-violet-300">against the crowd</span>}
+          {contrarian && <span className="text-[11px] text-muted-foreground">against the crowd</span>}
           <FlagList flags={signals?.flags || []} max={3} className="lg:hidden" />
         </div>
       </div>
       <span className="font-mono text-foreground w-10 text-right flex-shrink-0">{formatCents(t.price)}</span>
       <span className="font-mono text-muted-foreground w-16 text-right flex-shrink-0 hidden md:inline">{Math.round(t.size).toLocaleString()} sh</span>
-      <span className={cn('font-mono font-semibold w-16 text-right flex-shrink-0', t.usd >= 100_000 ? 'text-amber-300' : 'text-foreground')}>{formatUsd(t.usd, { compact: true })}</span>
+      <span className={cn('font-mono font-medium w-16 text-right flex-shrink-0', t.usd >= 100_000 ? 'text-amber-300' : 'text-foreground')}>{formatUsd(t.usd, { compact: true })}</span>
       <div className="w-44 flex-shrink-0 hidden lg:flex justify-end">
-        {signals?.pending ? <span className="text-[10px] text-muted-foreground">checking wallet…</span> : <FlagList flags={signals?.flags || []} max={3} />}
+        {signals?.pending ? <span className="text-[11px] text-muted-foreground">checking wallet…</span> : <FlagList flags={signals?.flags || []} max={3} />}
       </div>
     </div>
   );
@@ -130,7 +130,7 @@ export default function WhaleFlow({ trades, signalsById, categories, pendingStat
       <div className="surface overflow-hidden">
         <div className="max-h-[70vh] overflow-y-auto overscroll-contain">
           {/* Column headers stay pinned while the list scrolls. Widths and breakpoints mirror FillRow. */}
-          <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-2 border-b border-border bg-card text-[10px] uppercase tracking-wider text-muted-foreground">
+          <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-2 border-b border-border bg-card text-[11px] text-muted-foreground">
             <span className="w-8 flex-shrink-0">Age</span>
             <span className="w-36 sm:w-44 flex-shrink-0">Trader</span>
             <span className="w-24 flex-shrink-0 hidden sm:block">Side</span>

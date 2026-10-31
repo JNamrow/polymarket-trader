@@ -24,7 +24,7 @@ export function shortAgo(ts, now = Date.now()) {
 }
 
 export function TraderAvatar({ src, address = '', size = 'md', className }) {
-  const dims = size === 'sm' ? 'w-6 h-6 text-[9px]' : size === 'lg' ? 'w-12 h-12 text-sm' : 'w-8 h-8 text-[10px]';
+  const dims = size === 'sm' ? 'w-6 h-6 text-[11px]' : size === 'lg' ? 'w-12 h-12 text-sm' : 'w-8 h-8 text-[11px]';
   if (src) return <img src={src} alt="" className={cn('media rounded-lg object-cover bg-secondary flex-shrink-0', dims, className)} loading="lazy" />;
   return (
     <div className={cn('rounded-lg bg-secondary flex items-center justify-center font-mono text-muted-foreground flex-shrink-0', dims, className)}>
@@ -49,7 +49,7 @@ export function TraderLink({ address, name, profileImage, verified = false, size
     >
       {showAvatar && <TraderAvatar src={profileImage} address={address} size={size === 'sm' ? 'sm' : 'md'} />}
       <span className="truncate">{label}</span>
-      {verified && <BadgeCheck className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />}
+      {verified && <BadgeCheck className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />}
     </button>
   );
 }
@@ -77,17 +77,18 @@ export function AddressActions({ address, className }) {
   );
 }
 
+// Flags stay quiet; the one that changes how you read a wallet, a fresh account, carries the color.
 const FLAG_STYLES = {
   fresh_account: 'border-rose-500/40 bg-rose-500/10 text-rose-300',
-  few_markets: 'border-orange-500/40 bg-orange-500/10 text-orange-300',
-  concentrated: 'border-amber-500/40 bg-amber-500/10 text-amber-300',
-  long_shot: 'border-violet-500/40 bg-violet-500/10 text-violet-300',
-  big_size: 'border-sky-500/40 bg-sky-500/10 text-sky-300',
+  few_markets: 'border-border bg-secondary text-foreground/80',
+  concentrated: 'border-border bg-secondary text-foreground/80',
+  long_shot: 'border-border bg-secondary text-foreground/80',
+  big_size: 'border-border bg-secondary text-foreground/80',
 };
 
 export function FlagBadge({ flag }) {
   return (
-    <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 font-normal whitespace-nowrap', FLAG_STYLES[flag.id] || 'border-border text-muted-foreground')} title={flag.detail}>
+    <Badge variant="outline" className={cn('text-[11px] px-1.5 py-0 font-normal whitespace-nowrap', FLAG_STYLES[flag.id] || 'border-border text-muted-foreground')} title={flag.detail}>
       {flag.label}
     </Badge>
   );
@@ -102,15 +103,15 @@ export function FlagList({ flags = [], max = 3, className }) {
       {shown.map(f => (
         <FlagBadge key={f.id} flag={f} />
       ))}
-      {rest > 0 && <span className="text-[10px] text-muted-foreground">+{rest}</span>}
+      {rest > 0 && <span className="text-[11px] text-muted-foreground">+{rest}</span>}
     </span>
   );
 }
 
 const SCORE_STYLES = {
-  Elite: 'border-emerald-400/50 bg-emerald-500/15 text-emerald-300',
+  Elite: 'border-primary/40 bg-primary/10 text-primary',
   Strong: 'border-primary/40 bg-primary/10 text-primary',
-  Average: 'border-amber-500/40 bg-amber-500/10 text-amber-300',
+  Average: 'border-border bg-secondary text-foreground',
   Weak: 'border-rose-500/40 bg-rose-500/10 text-rose-300',
   Unrated: 'border-border bg-secondary text-muted-foreground',
 };
@@ -129,7 +130,7 @@ export function SideBadge({ side, outcome, className }) {
   return (
     <Badge
       variant="outline"
-      className={cn('text-[10px] px-1.5 py-0 font-mono whitespace-nowrap', buy ? 'border-primary/40 bg-primary/10 text-primary' : 'border-destructive/40 bg-destructive/10 text-destructive', className)}
+      className={cn('text-[11px] px-1.5 py-0 font-mono whitespace-nowrap', buy ? 'border-primary/40 bg-primary/10 text-primary' : 'border-destructive/40 bg-destructive/10 text-destructive', className)}
     >
       {buy ? 'BUY' : 'SELL'} {String(outcome || '').toUpperCase().slice(0, 12)}
     </Badge>
@@ -139,7 +140,7 @@ export function SideBadge({ side, outcome, className }) {
 export function CategoryBadge({ category, className }) {
   if (!category || category === 'other') return null;
   return (
-    <Badge variant="outline" className={cn('text-[9px] px-1 py-0 border-border text-muted-foreground font-normal', className)}>
+    <Badge variant="outline" className={cn('text-[11px] px-1 py-0 border-border text-muted-foreground font-normal', className)}>
       {CATEGORY_LABELS[category] || category}
     </Badge>
   );
@@ -159,7 +160,7 @@ export function Chip({ active, onClick, children, small = false, className, titl
       onClick={onClick}
       title={title}
       className={cn(
-        'pressable rounded-full font-medium border whitespace-nowrap',
+        'pressable rounded-md font-medium border whitespace-nowrap',
         small ? 'px-2 py-0.5 text-[11px]' : 'px-3 py-1 text-xs',
         active ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-card border-border text-muted-foreground hover:text-foreground',
         className
@@ -191,8 +192,8 @@ export function Tile({ label, value, sub, className, title }) {
   return (
     <div className={cn('surface p-3', className)} title={title}>
       <p className="text-[11px] text-muted-foreground">{label}</p>
-      <div className="text-base font-mono font-semibold text-foreground mt-0.5 leading-tight">{value}</div>
-      {sub && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{sub}</p>}
+      <div className="text-base font-mono font-medium text-foreground mt-0.5 leading-tight">{value}</div>
+      {sub && <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{sub}</p>}
     </div>
   );
 }
@@ -255,7 +256,7 @@ export function LeanBar({ yesShare, yesPrice, outcomes = ['Yes', 'No'], classNam
         <div className="absolute inset-y-0 left-0 bg-primary/70" style={{ width: `${pct}%` }} />
         {price != null && <div className="absolute inset-y-0 w-0.5 bg-foreground" style={{ left: `calc(${price}% - 1px)` }} />}
       </div>
-      <div className="flex justify-between text-[10px] font-mono mt-0.5">
+      <div className="flex justify-between text-[11px] font-mono mt-0.5">
         <span className="text-primary">{pct}% {String(outcomes[0]).slice(0, 10)}</span>
         {gap != null && <span className={cn(gap > 0 ? 'text-primary' : gap < 0 ? 'text-destructive' : 'text-muted-foreground')}>{gap > 0 ? '+' : ''}{gap} vs price</span>}
       </div>

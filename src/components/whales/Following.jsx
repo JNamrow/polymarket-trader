@@ -56,16 +56,16 @@ function FollowedCard({ wallet, following }) {
 
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div>
-          <p className="text-[10px] text-muted-foreground">All-time P&L</p>
-          <p className="font-mono font-semibold">{stats.data ? <Pnl value={stats.data.tradePnl} /> : '…'}</p>
+          <p className="text-[11px] text-muted-foreground">All-time P&L</p>
+          <p className="font-mono font-medium">{stats.data ? <Pnl value={stats.data.tradePnl} /> : '…'}</p>
         </div>
         <div>
-          <p className="text-[10px] text-muted-foreground">Portfolio</p>
-          <p className="font-mono font-semibold text-foreground">{value.data != null ? formatUsd(value.data, { compact: true }) : '…'}</p>
+          <p className="text-[11px] text-muted-foreground">Portfolio</p>
+          <p className="font-mono font-medium text-foreground">{value.data != null ? formatUsd(value.data, { compact: true }) : '…'}</p>
         </div>
         <div>
-          <p className="text-[10px] text-muted-foreground">Markets</p>
-          <p className="font-mono font-semibold text-foreground">{stats.data ? stats.data.marketsTraded : '…'}</p>
+          <p className="text-[11px] text-muted-foreground">Markets</p>
+          <p className="font-mono font-medium text-foreground">{stats.data ? stats.data.marketsTraded : '…'}</p>
         </div>
       </div>
 
@@ -76,7 +76,7 @@ function FollowedCard({ wallet, following }) {
           <div className="space-y-1">
             {fills.data.slice(0, 3).map(t => (
               <p key={t.id} className="text-muted-foreground truncate">
-                <span className="font-mono text-[10px] mr-1.5">{shortAgo(t.timestamp)}</span>
+                <span className="font-mono text-[11px] mr-1.5">{shortAgo(t.timestamp)}</span>
                 <span className={cn(t.side === 'BUY' ? 'text-primary' : 'text-destructive')}>{describeFill(t)}</span>{' '}
                 <a href={marketUrl(t.eventSlug)} target="_blank" rel="noreferrer" className="hover:text-foreground hover:underline" title={t.title}>
                   {t.title}
@@ -119,7 +119,7 @@ export default function Following({ following }) {
   return (
     <div className="space-y-4">
       <div className="surface p-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Follow a wallet</p>
+        <p className="text-xs font-medium text-muted-foreground mb-2">Follow a wallet</p>
         <div className="flex flex-col sm:flex-row gap-2">
           <Input value={address} onChange={e => setAddress(e.target.value)} placeholder="0x… Polymarket profile address" className="bg-background border-border font-mono text-xs h-9 flex-1" />
           <Input value={label} onChange={e => setLabel(e.target.value)} placeholder="Label (optional)" className="bg-background border-border text-xs h-9 sm:w-40" />

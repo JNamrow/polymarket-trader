@@ -68,16 +68,16 @@ function WalletRow({ row, following, onCopy }) {
     <div className={cn('flex items-center gap-3 px-4 py-2.5 border-b border-border/60 last:border-b-0 text-xs hover:bg-secondary/30 transition-colors duration-100', row.suspicious && 'bg-rose-500/5')}>
       <div className="w-40 sm:w-48 flex-shrink-0 min-w-0">
         <TraderLink address={row.address} name={row.name} profileImage={row.profile_image} size="sm" className="text-xs w-full" />
-        {following.isFollowing(row.address) && <span className="block text-[10px] text-yellow-400 pl-8">following</span>}
+        {following.isFollowing(row.address) && <span className="block text-[11px] text-yellow-400 pl-8">following</span>}
       </div>
       <span className="w-24 flex-shrink-0 hidden sm:flex">
-        {checked ? <ScoreBadge score={row.score} label={row.score_label || 'Unrated'} title={row.closed_count != null ? `From the last ${row.closed_count} settled positions` : undefined} /> : <span className="text-[10px] text-muted-foreground">queued</span>}
+        {checked ? <ScoreBadge score={row.score} label={row.score_label || 'Unrated'} title={row.closed_count != null ? `From the last ${row.closed_count} settled positions` : undefined} /> : <span className="text-[11px] text-muted-foreground">queued</span>}
       </span>
       <span className="w-16 text-right flex-shrink-0">{checked ? <Pnl value={row.trade_pnl} /> : <span className="text-muted-foreground">—</span>}</span>
       <span className="font-mono text-muted-foreground w-16 text-right flex-shrink-0 hidden md:inline">{checked && row.volume_total != null ? formatUsd(row.volume_total, { compact: true }) : '—'}</span>
       <span className="w-20 text-right flex-shrink-0 font-mono">
         <span className="text-foreground">{formatUsd(row.fills_usd, { compact: true })}</span>
-        <span className="block text-[10px] text-muted-foreground">
+        <span className="block text-[11px] text-muted-foreground">
           {row.fills_seen} fill{row.fills_seen === 1 ? '' : 's'}
         </span>
       </span>
@@ -92,7 +92,7 @@ function WalletRow({ row, following, onCopy }) {
             <a href={marketUrl(row.last_fill_event_slug)} target="_blank" rel="noreferrer" className="block truncate text-foreground/80 hover:underline" title={row.last_fill_title}>
               {row.last_fill_title}
             </a>
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[11px] text-muted-foreground">
               {shortAgo(Date.parse(row.last_fill_at))} ago · {row.last_fill_side === 'BUY' ? 'bought' : 'sold'} {formatUsd(row.last_fill_usd, { compact: true })}
             </span>
           </>
@@ -197,7 +197,7 @@ export default function WalletRegistry({ following }) {
       <div className="surface overflow-hidden">
         <div className="max-h-[70vh] overflow-y-auto overscroll-contain">
           {/* Column headers stay pinned while the list scrolls. Widths and breakpoints mirror WalletRow. */}
-          <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-2 border-b border-border bg-card text-[10px] uppercase tracking-wider text-muted-foreground">
+          <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-2 border-b border-border bg-card text-[11px] text-muted-foreground">
             <span className="w-40 sm:w-48 flex-shrink-0">Trader</span>
             <span className="w-24 flex-shrink-0 hidden sm:block">Score</span>
             <span className="w-16 text-right flex-shrink-0">P&L</span>
